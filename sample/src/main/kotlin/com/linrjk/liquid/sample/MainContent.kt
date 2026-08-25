@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import com.linrjk.liquid.sample.destinations.AdaptiveLuminanceGlassContent
 import com.linrjk.liquid.sample.destinations.BottomTabsContent
 import com.linrjk.liquid.sample.destinations.ButtonsContent
+import com.linrjk.liquid.sample.destinations.CircleButtonContent
 import com.linrjk.liquid.sample.destinations.ControlCenterContent
 import com.linrjk.liquid.sample.destinations.DialogContent
 import com.linrjk.liquid.sample.destinations.GlassPlaygroundContent
@@ -36,6 +37,8 @@ fun MainContent() {
 
         when (destination) {
             CatalogDestination.Home -> HomeContent(onNavigate = { destination = it })
+
+            CatalogDestination.CircleButton -> CircleButtonContent()
 
             CatalogDestination.Buttons -> ButtonsContent()
             CatalogDestination.Toggle -> ToggleContent()

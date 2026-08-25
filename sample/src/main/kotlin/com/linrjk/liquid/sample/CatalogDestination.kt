@@ -3,6 +3,8 @@ package com.linrjk.liquid.sample
 enum class CatalogDestination {
     Home,
 
+    CircleButton,
+
     Buttons,
     Toggle,
     Slider,

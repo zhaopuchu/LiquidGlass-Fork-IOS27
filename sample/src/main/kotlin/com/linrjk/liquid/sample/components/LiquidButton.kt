@@ -14,8 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.lerp
@@ -42,6 +44,9 @@ fun LiquidButton(
     tint: Color = Color.Unspecified,
     surfaceColor: Color = Color.Unspecified,
     glass: GlassDebugState? = null,
+    shape: Shape? = null,
+    height: Dp = 48f.dp,
+    horizontalContentPadding: Dp = 16f.dp,
     content: @Composable RowScope.() -> Unit
 ) {
     glass?.cornerRadiusFrac
@@ -64,7 +69,8 @@ fun LiquidButton(
             .drawBackdrop(
                 backdrop = backdrop,
                 shape = {
-                    if (glass != null) glass.roundedRectangle(24f.dp)
+                    if (shape != null) shape
+                    else if (glass != null) glass.roundedRectangle(24f.dp)
                     else Capsule()
                 },
                 effects = {
@@ -133,8 +139,8 @@ fun LiquidButton(
                     Modifier
                 }
             )
-            .height(48f.dp)
-            .padding(horizontal = 16f.dp),
+            .height(height)
+            .padding(horizontal = horizontalContentPadding),
         horizontalArrangement = Arrangement.spacedBy(8f.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
         content = content
