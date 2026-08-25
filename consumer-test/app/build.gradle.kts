@@ -34,5 +34,5 @@ kotlin {
 }
 
 dependencies {
-    implementation("com.github.zhaopuchu:LiquidGlass-Fork-IOS27:v1.0.0")
+    implementation("com.github.zhaopuchu:LiquidGlass-Fork-IOS27:v1.2.0")
 }
