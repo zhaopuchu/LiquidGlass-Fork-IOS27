@@ -81,31 +81,32 @@ fun LiquidSlider(
         val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
         val animationScope = rememberCoroutineScope()
         var didDrag by remember { mutableStateOf(false) }
-        val dampedDragAnimation = remember(animationScope) {
-            DampedDragAnimation(
-                animationScope = animationScope,
-                initialValue = value(),
-                valueRange = valueRange,
-                visibilityThreshold = visibilityThreshold,
-                initialScale = 1f,
-                pressedScale = 1.5f,
-                onDragStarted = {},
-                onDragStopped = {
-                    if (didDrag) {
-                        onValueChange(targetValue)
+        val dampedDragAnimation =
+            remember(animationScope, valueRange, visibilityThreshold) {
+                DampedDragAnimation(
+                    animationScope = animationScope,
+                    initialValue = value(),
+                    valueRange = valueRange,
+                    visibilityThreshold = visibilityThreshold,
+                    initialScale = 1f,
+                    pressedScale = 1.5f,
+                    onDragStarted = {},
+                    onDragStopped = {
+                        if (didDrag) {
+                            onValueChange(targetValue)
+                        }
+                    },
+                    onDrag = { _, dragAmount ->
+                        if (!didDrag) {
+                            didDrag = dragAmount.x != 0f
+                        }
+                        val delta = (valueRange.endInclusive - valueRange.start) * (dragAmount.x / trackWidth)
+                        val next = if (isLtr) (targetValue + delta).coerceIn(valueRange)
+                        else (targetValue - delta).coerceIn(valueRange)
+                        onValueChange(next)
                     }
-                },
-                onDrag = { _, dragAmount ->
-                    if (!didDrag) {
-                        didDrag = dragAmount.x != 0f
-                    }
-                    val delta = (valueRange.endInclusive - valueRange.start) * (dragAmount.x / trackWidth)
-                    val next = if (isLtr) (targetValue + delta).coerceIn(valueRange)
-                    else (targetValue - delta).coerceIn(valueRange)
-                    onValueChange(next)
-                }
-            )
-        }
+                )
+            }
         LaunchedEffect(dampedDragAnimation) {
             snapshotFlow { value() }
                 .collectLatest { value ->
