@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -18,7 +19,6 @@ import androidx.compose.ui.node.requireGraphicsContext
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceAtMost
 import com.linrjk.liquid.RuntimeShaderCacheImpl
 import com.linrjk.liquid.internal.ShapeProvider
@@ -74,7 +74,6 @@ internal class HighlightNode(
     override val shouldAutoInvalidate: Boolean = false
 
     private var highlightLayer: GraphicsLayer? = null
-    private var darkEdgeLayer: GraphicsLayer? = null
 
     private val highlightPaint =
         Paint().apply {
@@ -103,6 +102,7 @@ internal class HighlightNode(
             val size = size
             val density: Density = this
             val layoutDirection = layoutDirection
+            val shape = shapeProvider.innerShape
             val darkEdge =
                 highlight.darkEdge?.takeIf {
                     it.width.value > 0f && it.alpha > 0f
@@ -122,7 +122,12 @@ internal class HighlightNode(
                     null
                 }
 
-            configureHighlightPaint(highlight, darkEdge)
+            if (darkEdge != null) {
+                configureDarkEdgePaint(darkEdge)
+                drawClippedOutline(outline, clipPath, darkEdgePaint)
+            }
+
+            configureHighlightPaint(highlight, shape)
 
             highlightLayer.alpha = highlight.alpha
             highlightLayer.blendMode = highlight.style.blendMode
@@ -131,26 +136,12 @@ internal class HighlightNode(
             translate(-1f, -1f) {
                 drawLayer(highlightLayer)
             }
-
-            val darkEdgeLayer = darkEdgeLayer
-            if (darkEdge != null && darkEdgeLayer != null) {
-                configureDarkEdgePaint(darkEdge)
-
-                darkEdgeLayer.alpha = darkEdge.alpha
-                darkEdgeLayer.blendMode = DrawScope.DefaultBlendMode
-                recordOutline(darkEdgeLayer, safeSize, outline, clipPath, darkEdgePaint)
-
-                translate(-1f, -1f) {
-                    drawLayer(darkEdgeLayer)
-                }
-            }
         }
     }
 
     override fun onAttach() {
         val graphicsContext = requireGraphicsContext()
         highlightLayer = graphicsContext.createGraphicsLayer()
-        darkEdgeLayer = graphicsContext.createGraphicsLayer()
     }
 
     override fun onDetach() {
@@ -159,10 +150,6 @@ internal class HighlightNode(
             graphicsContext.releaseGraphicsLayer(layer)
             highlightLayer = null
         }
-        darkEdgeLayer?.let { layer ->
-            graphicsContext.releaseGraphicsLayer(layer)
-            darkEdgeLayer = null
-        }
         clipPath = null
         runtimeShaderCache.clear()
         prevStyle = null
@@ -170,17 +157,16 @@ internal class HighlightNode(
 
     private fun DrawScope.configureHighlightPaint(
         highlight: Highlight,
-        darkEdge: DarkEdge?
+        shape: Shape
     ) {
         highlightPaint.color = highlight.style.color
-        val width = highlight.width + (darkEdge?.width ?: 0f.dp)
-        highlightPaint.strokeWidth = strokeWidth(width.toPx())
+        highlightPaint.strokeWidth = strokeWidth(highlight.width.toPx())
         highlightPaint.blur(highlight.blurRadius.toPx())
         if (isRuntimeShaderSupported()) {
             val shader =
                 with(highlight.style) {
                     createShader(
-                        shape = shapeProvider.shape,
+                        shape = shape,
                         runtimeShaderCache = runtimeShaderCache
                     )
                 }
@@ -189,7 +175,8 @@ internal class HighlightNode(
     }
 
     private fun DrawScope.configureDarkEdgePaint(darkEdge: DarkEdge) {
-        darkEdgePaint.color = darkEdge.color
+        darkEdgePaint.color =
+            darkEdge.color.copy(alpha = darkEdge.color.alpha * darkEdge.alpha)
         darkEdgePaint.strokeWidth = strokeWidth(darkEdge.width.toPx())
     }
 
@@ -213,5 +200,17 @@ internal class HighlightNode(
                 canvas.restore()
             }
         }
+    }
+
+    private fun DrawScope.drawClippedOutline(
+        outline: Outline,
+        clipPath: Path?,
+        paint: Paint
+    ) {
+        val canvas = drawContext.canvas
+        canvas.save()
+        canvas.clipOutline(outline, clipPath)
+        canvas.drawOutline(outline, paint)
+        canvas.restore()
     }
 }

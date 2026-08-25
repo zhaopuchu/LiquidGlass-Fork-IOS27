@@ -1,6 +1,7 @@
 package com.linrjk.liquid.highlight
 
 import androidx.annotation.FloatRange
+import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -15,6 +16,7 @@ import com.linrjk.liquid.RuntimeShaderCache
 import com.linrjk.liquid.internal.AmbientHighlightShaderString
 import com.linrjk.liquid.internal.DefaultHighlightShaderString
 import com.linrjk.liquid.isRuntimeShaderSupported
+import com.linrjk.liquid.shapes.RoundedRectangularShape
 import kotlin.math.PI
 
 @Immutable
@@ -112,27 +114,55 @@ interface HighlightStyle {
     }
 }
 
-private fun DrawScope.getCornerRadii(shape: Shape): FloatArray {
+internal fun DrawScope.getCornerRadii(shape: Shape): FloatArray {
     val size = size
     val maxRadius = size.minDimension / 2f
-    val shape = shape as? CornerBasedShape ?: return FloatArray(4) { maxRadius }
-    val isLtr = layoutDirection == LayoutDirection.Ltr
-    val topLeft =
-        if (isLtr) shape.topStart.toPx(size, this)
-        else shape.topEnd.toPx(size, this)
-    val topRight =
-        if (isLtr) shape.topEnd.toPx(size, this)
-        else shape.topStart.toPx(size, this)
-    val bottomRight =
-        if (isLtr) shape.bottomEnd.toPx(size, this)
-        else shape.bottomStart.toPx(size, this)
-    val bottomLeft =
-        if (isLtr) shape.bottomStart.toPx(size, this)
-        else shape.bottomEnd.toPx(size, this)
-    return floatArrayOf(
-        topLeft.fastCoerceAtMost(maxRadius),
-        topRight.fastCoerceAtMost(maxRadius),
-        bottomRight.fastCoerceAtMost(maxRadius),
-        bottomLeft.fastCoerceAtMost(maxRadius)
-    )
+    return when (shape) {
+        is RoundedRectangularShape -> {
+            val corners = shape.corners(size, layoutDirection, this)
+            floatArrayOf(
+                corners.topLeft,
+                corners.topRight,
+                corners.bottomRight,
+                corners.bottomLeft
+            )
+        }
+
+        is AbsoluteRoundedCornerShape -> {
+            floatArrayOf(
+                shape.topStart.toPx(size, this),
+                shape.topEnd.toPx(size, this),
+                shape.bottomEnd.toPx(size, this),
+                shape.bottomStart.toPx(size, this)
+            ).apply {
+                for (index in indices) {
+                    this[index] = this[index].fastCoerceAtMost(maxRadius)
+                }
+            }
+        }
+
+        is CornerBasedShape -> {
+            val isLtr = layoutDirection == LayoutDirection.Ltr
+            val topLeft =
+                if (isLtr) shape.topStart.toPx(size, this)
+                else shape.topEnd.toPx(size, this)
+            val topRight =
+                if (isLtr) shape.topEnd.toPx(size, this)
+                else shape.topStart.toPx(size, this)
+            val bottomRight =
+                if (isLtr) shape.bottomEnd.toPx(size, this)
+                else shape.bottomStart.toPx(size, this)
+            val bottomLeft =
+                if (isLtr) shape.bottomStart.toPx(size, this)
+                else shape.bottomEnd.toPx(size, this)
+            floatArrayOf(
+                topLeft.fastCoerceAtMost(maxRadius),
+                topRight.fastCoerceAtMost(maxRadius),
+                bottomRight.fastCoerceAtMost(maxRadius),
+                bottomLeft.fastCoerceAtMost(maxRadius)
+            )
+        }
+
+        else -> FloatArray(4) { maxRadius }
+    }
 }
