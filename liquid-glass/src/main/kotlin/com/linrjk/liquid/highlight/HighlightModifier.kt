@@ -83,6 +83,10 @@ internal class HighlightNode(
         Paint().apply {
             style = PaintingStyle.Stroke
         }
+    private val darkEdgeSpreadPaint =
+        Paint().apply {
+            style = PaintingStyle.Stroke
+        }
     private var clipPath: Path? = null
 
     private val runtimeShaderCache = RuntimeShaderCacheImpl()
@@ -105,7 +109,7 @@ internal class HighlightNode(
             val shape = shapeProvider.innerShape
             val darkEdge =
                 highlight.darkEdge?.takeIf {
-                    it.width.value > 0f && it.alpha > 0f
+                    (it.width.value > 0f || it.spread.value > 0f) && it.alpha > 0f
                 }
 
             val safeSize =
@@ -123,8 +127,13 @@ internal class HighlightNode(
                 }
 
             if (darkEdge != null) {
-                configureDarkEdgePaint(darkEdge)
-                drawClippedOutline(outline, clipPath, darkEdgePaint)
+                configureDarkEdgePaints(darkEdge)
+                if (darkEdge.spread.value > 0f && darkEdge.spreadAlpha > 0f) {
+                    drawClippedOutline(outline, clipPath, darkEdgeSpreadPaint)
+                }
+                if (darkEdge.width.value > 0f) {
+                    drawClippedOutline(outline, clipPath, darkEdgePaint)
+                }
             }
 
             configureHighlightPaint(highlight, shape)
@@ -174,10 +183,19 @@ internal class HighlightNode(
         }
     }
 
-    private fun DrawScope.configureDarkEdgePaint(darkEdge: DarkEdge) {
+    private fun DrawScope.configureDarkEdgePaints(darkEdge: DarkEdge) {
+        val alpha = darkEdge.color.alpha * darkEdge.alpha
+
+        darkEdgeSpreadPaint.color =
+            darkEdge.color.copy(alpha = alpha * darkEdge.spreadAlpha)
+        darkEdgeSpreadPaint.strokeWidth =
+            strokeWidth((darkEdge.width + darkEdge.spread).toPx())
+        darkEdgeSpreadPaint.blur(darkEdge.blurRadius.toPx())
+
         darkEdgePaint.color =
-            darkEdge.color.copy(alpha = darkEdge.color.alpha * darkEdge.alpha)
+            darkEdge.color.copy(alpha = alpha)
         darkEdgePaint.strokeWidth = strokeWidth(darkEdge.width.toPx())
+        darkEdgePaint.blur(0f)
     }
 
     private fun DrawScope.strokeWidth(width: Float): Float {

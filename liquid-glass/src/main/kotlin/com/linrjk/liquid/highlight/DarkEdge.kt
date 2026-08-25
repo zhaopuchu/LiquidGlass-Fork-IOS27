@@ -9,9 +9,12 @@ import androidx.compose.ui.unit.dp
 
 @Immutable
 data class DarkEdge(
-    val width: Dp = 0.75f.dp,
+    val width: Dp = 0.5f.dp,
     val color: Color = Color.Black,
-    @param:FloatRange(from = 0.0, to = 1.0) val alpha: Float = 0.18f
+    @param:FloatRange(from = 0.0, to = 1.0) val alpha: Float = 0.18f,
+    val spread: Dp = 2f.dp,
+    val blurRadius: Dp = 1.25f.dp,
+    @param:FloatRange(from = 0.0, to = 1.0) val spreadAlpha: Float = 0.45f
 ) {
 
     companion object {
