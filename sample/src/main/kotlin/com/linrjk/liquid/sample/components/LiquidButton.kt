@@ -25,6 +25,7 @@ import com.linrjk.liquid.drawBackdrop
 import com.linrjk.liquid.effects.blur
 import com.linrjk.liquid.effects.lens
 import com.linrjk.liquid.effects.vibrancy
+import com.linrjk.liquid.highlight.Highlight
 import com.linrjk.liquid.shapes.Capsule
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -40,8 +41,16 @@ fun LiquidButton(
     isInteractive: Boolean = true,
     tint: Color = Color.Unspecified,
     surfaceColor: Color = Color.Unspecified,
+    glass: GlassDebugState? = null,
     content: @Composable RowScope.() -> Unit
 ) {
+    glass?.cornerRadiusFrac
+    glass?.blurRadiusDp
+    glass?.refractionHeightFrac
+    glass?.refractionAmountFrac
+    glass?.chromaticAberration
+    glass?.edgeDarkening
+
     val animationScope = rememberCoroutineScope()
 
     val interactiveHighlight = remember(animationScope) {
@@ -54,11 +63,22 @@ fun LiquidButton(
         modifier
             .drawBackdrop(
                 backdrop = backdrop,
-                shape = { Capsule() },
+                shape = {
+                    if (glass != null) glass.roundedRectangle(24f.dp)
+                    else Capsule()
+                },
                 effects = {
-                    vibrancy()
-                    blur(2f.dp.toPx())
-                    lens(12f.dp.toPx(), 24f.dp.toPx())
+                    if (glass != null) {
+                        glass.applyEffects(this)
+                    } else {
+                        vibrancy()
+                        blur(2f.dp.toPx())
+                        lens(12f.dp.toPx(), 24f.dp.toPx())
+                    }
+                },
+                highlight = {
+                    if (glass != null) glass.highlight()
+                    else Highlight.Default
                 },
                 layerBlock = if (isInteractive) {
                     {

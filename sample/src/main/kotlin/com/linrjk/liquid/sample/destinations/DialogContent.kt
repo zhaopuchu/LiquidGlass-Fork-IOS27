@@ -23,14 +23,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.linrjk.liquid.sample.BackdropDemoScaffold
+import com.linrjk.liquid.sample.components.GlassDebugOverlay
+import com.linrjk.liquid.sample.components.rememberGlassDebugState
 import com.linrjk.liquid.sample.utils.LoremIpsum
 import com.linrjk.liquid.drawBackdrop
-import com.linrjk.liquid.effects.blur
 import com.linrjk.liquid.effects.colorControls
-import com.linrjk.liquid.effects.lens
-import com.linrjk.liquid.highlight.Highlight
 import com.linrjk.liquid.shapes.Capsule
-import com.linrjk.liquid.shapes.RoundedRectangle
 
 @Composable
 fun DialogContent() {
@@ -52,21 +50,28 @@ fun DialogContent() {
             drawRect(dimColor)
         }
     ) { backdrop ->
+        val glass = rememberGlassDebugState()
+        glass.cornerRadiusFrac
+        glass.blurRadiusDp
+        glass.refractionHeightFrac
+        glass.refractionAmountFrac
+        glass.chromaticAberration
+        glass.edgeDarkening
+        GlassDebugOverlay(glass, backdrop) {
         Column(
             Modifier
                 .padding(40f.dp)
                 .drawBackdrop(
                     backdrop = backdrop,
-                    shape = { RoundedRectangle(48f.dp) },
+                    shape = { glass.roundedRectangle(48f.dp) },
                     effects = {
                         colorControls(
                             brightness = if (isLightTheme) 0.2f else 0f,
                             saturation = 1.5f
                         )
-                        blur(if (isLightTheme) 16f.dp.toPx() else 8f.dp.toPx())
-                        lens(24f.dp.toPx(), 48f.dp.toPx(), depthEffect = true)
+                        glass.applyEffects(this)
                     },
-                    highlight = { Highlight.Plain },
+                    highlight = { glass.highlight() },
                     onDrawSurface = { drawRect(containerColor) }
                 )
                 .fillMaxWidth()
@@ -134,6 +139,7 @@ fun DialogContent() {
                     )
                 }
             }
+        }
         }
     }
 }

@@ -18,7 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.linrjk.liquid.backdrops.rememberCanvasBackdrop
 import com.linrjk.liquid.sample.BackdropDemoScaffold
+import com.linrjk.liquid.sample.components.GlassDebugOverlay
 import com.linrjk.liquid.sample.components.LiquidSlider
+import com.linrjk.liquid.sample.components.rememberGlassDebugState
 import com.linrjk.liquid.shapes.RoundedRectangle
 
 @Composable
@@ -29,6 +31,8 @@ fun SliderContent() {
         else Color(0xFF121212)
 
     BackdropDemoScaffold { backdrop ->
+        val glass = rememberGlassDebugState()
+        GlassDebugOverlay(glass, backdrop) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16f.dp)
@@ -41,7 +45,8 @@ fun SliderContent() {
                 valueRange = 0f..100f,
                 visibilityThreshold = 0.01f,
                 backdrop = backdrop,
-                modifier = Modifier.padding(horizontal = 32f.dp)
+                modifier = Modifier.padding(horizontal = 32f.dp),
+                glass = glass
             )
 
             Box(
@@ -57,9 +62,11 @@ fun SliderContent() {
                     valueRange = 0f..100f,
                     visibilityThreshold = 0.01f,
                     backdrop = rememberCanvasBackdrop { drawRect(backgroundColor) },
-                    modifier = Modifier.padding(horizontal = 32f.dp)
+                    modifier = Modifier.padding(horizontal = 32f.dp),
+                    glass = glass
                 )
             }
+        }
         }
     }
 }

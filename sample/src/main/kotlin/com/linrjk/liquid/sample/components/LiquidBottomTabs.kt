@@ -63,8 +63,16 @@ fun LiquidBottomTabs(
     backdrop: Backdrop,
     tabsCount: Int,
     modifier: Modifier = Modifier,
+    glass: GlassDebugState? = null,
     content: @Composable RowScope.() -> Unit
 ) {
+    glass?.cornerRadiusFrac
+    glass?.blurRadiusDp
+    glass?.refractionHeightFrac
+    glass?.refractionAmountFrac
+    glass?.chromaticAberration
+    glass?.edgeDarkening
+
     val isLightTheme = !isSystemInDarkTheme()
     val accentColor =
         if (isLightTheme) Color(0xFF0088FF)
@@ -165,11 +173,22 @@ fun LiquidBottomTabs(
                 }
                 .drawBackdrop(
                     backdrop = backdrop,
-                    shape = { Capsule() },
+                    shape = {
+                        if (glass != null) glass.roundedRectangle(32f.dp)
+                        else Capsule()
+                    },
                     effects = {
-                        vibrancy()
-                        blur(8f.dp.toPx())
-                        lens(24f.dp.toPx(), 24f.dp.toPx())
+                        if (glass != null) {
+                            glass.applyEffects(this)
+                        } else {
+                            vibrancy()
+                            blur(8f.dp.toPx())
+                            lens(24f.dp.toPx(), 24f.dp.toPx())
+                        }
+                    },
+                    highlight = {
+                        if (glass != null) glass.highlight()
+                        else Highlight.Default
                     },
                     layerBlock = {
                         val progress = dampedDragAnimation.pressProgress
@@ -202,19 +221,30 @@ fun LiquidBottomTabs(
                     }
                     .drawBackdrop(
                         backdrop = backdrop,
-                        shape = { Capsule() },
+                        shape = {
+                            if (glass != null) glass.roundedRectangle(28f.dp)
+                            else Capsule()
+                        },
                         effects = {
-                            val progress = dampedDragAnimation.pressProgress
-                            vibrancy()
-                            blur(8f.dp.toPx())
-                            lens(
-                                24f.dp.toPx() * progress,
-                                24f.dp.toPx() * progress
-                            )
+                            if (glass != null) {
+                                glass.applyEffects(this)
+                            } else {
+                                val progress = dampedDragAnimation.pressProgress
+                                vibrancy()
+                                blur(8f.dp.toPx())
+                                lens(
+                                    24f.dp.toPx() * progress,
+                                    24f.dp.toPx() * progress
+                                )
+                            }
                         },
                         highlight = {
-                            val progress = dampedDragAnimation.pressProgress
-                            Highlight.Default.copy(alpha = progress)
+                            if (glass != null) {
+                                glass.highlight()
+                            } else {
+                                val progress = dampedDragAnimation.pressProgress
+                                Highlight.Default.copy(alpha = progress)
+                            }
                         },
                         onDrawSurface = { drawRect(containerColor) }
                     )
@@ -240,18 +270,29 @@ fun LiquidBottomTabs(
                 .then(dampedDragAnimation.modifier)
                 .drawBackdrop(
                     backdrop = rememberCombinedBackdrop(backdrop, tabsBackdrop),
-                    shape = { Capsule() },
+                    shape = {
+                        if (glass != null) glass.roundedRectangle(28f.dp)
+                        else Capsule()
+                    },
                     effects = {
-                        val progress = dampedDragAnimation.pressProgress
-                        lens(
-                            10f.dp.toPx() * progress,
-                            14f.dp.toPx() * progress,
-                            chromaticAberration = true
-                        )
+                        if (glass != null) {
+                            glass.applyEffects(this)
+                        } else {
+                            val progress = dampedDragAnimation.pressProgress
+                            lens(
+                                10f.dp.toPx() * progress,
+                                14f.dp.toPx() * progress,
+                                chromaticAberration = true
+                            )
+                        }
                     },
                     highlight = {
-                        val progress = dampedDragAnimation.pressProgress
-                        Highlight.Default.copy(alpha = progress)
+                        if (glass != null) {
+                            glass.highlight()
+                        } else {
+                            val progress = dampedDragAnimation.pressProgress
+                            Highlight.Default.copy(alpha = progress)
+                        }
                     },
                     shadow = {
                         val progress = dampedDragAnimation.pressProgress

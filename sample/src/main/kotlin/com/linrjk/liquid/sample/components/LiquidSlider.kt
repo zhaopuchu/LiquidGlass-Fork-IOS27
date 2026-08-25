@@ -52,8 +52,16 @@ fun LiquidSlider(
     valueRange: ClosedFloatingPointRange<Float>,
     visibilityThreshold: Float,
     backdrop: Backdrop,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    glass: GlassDebugState? = null
 ) {
+    glass?.cornerRadiusFrac
+    glass?.blurRadiusDp
+    glass?.refractionHeightFrac
+    glass?.refractionAmountFrac
+    glass?.chromaticAberration
+    glass?.edgeDarkening
+
     val isLightTheme = !isSystemInDarkTheme()
     val accentColor =
         if (isLightTheme) Color(0xFF0088FF)
@@ -92,10 +100,9 @@ fun LiquidSlider(
                         didDrag = dragAmount.x != 0f
                     }
                     val delta = (valueRange.endInclusive - valueRange.start) * (dragAmount.x / trackWidth)
-                    onValueChange(
-                        if (isLtr) (targetValue + delta).coerceIn(valueRange)
-                        else (targetValue - delta).coerceIn(valueRange)
-                    )
+                    val next = if (isLtr) (targetValue + delta).coerceIn(valueRange)
+                    else (targetValue - delta).coerceIn(valueRange)
+                    onValueChange(next)
                 }
             )
         }
@@ -163,23 +170,34 @@ fun LiquidSlider(
                             }
                         }
                     ),
-                    shape = { Capsule() },
+                    shape = {
+                        if (glass != null) glass.roundedRectangle(12f.dp)
+                        else Capsule()
+                    },
                     effects = {
-                        val progress = dampedDragAnimation.pressProgress
-                        blur(8f.dp.toPx() * (1f - progress))
-                        lens(
-                            10f.dp.toPx() * progress,
-                            14f.dp.toPx() * progress,
-                            chromaticAberration = true
-                        )
+                        if (glass != null) {
+                            glass.applyEffects(this)
+                        } else {
+                            val progress = dampedDragAnimation.pressProgress
+                            blur(8f.dp.toPx() * (1f - progress))
+                            lens(
+                                10f.dp.toPx() * progress,
+                                14f.dp.toPx() * progress,
+                                chromaticAberration = true
+                            )
+                        }
                     },
                     highlight = {
-                        val progress = dampedDragAnimation.pressProgress
-                        Highlight.Ambient.copy(
-                            width = Highlight.Ambient.width / 1.5f,
-                            blurRadius = Highlight.Ambient.blurRadius / 1.5f,
-                            alpha = progress
-                        )
+                        if (glass != null) {
+                            glass.highlight()
+                        } else {
+                            val progress = dampedDragAnimation.pressProgress
+                            Highlight.Ambient.copy(
+                                width = Highlight.Ambient.width / 1.5f,
+                                blurRadius = Highlight.Ambient.blurRadius / 1.5f,
+                                alpha = progress
+                            )
+                        }
                     },
                     shadow = {
                         Shadow(

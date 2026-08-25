@@ -23,8 +23,10 @@ import androidx.compose.ui.unit.sp
 import com.linrjk.liquid.sample.BackdropDemoScaffold
 import com.linrjk.liquid.sample.Block
 import com.linrjk.liquid.sample.FlightIcon
+import com.linrjk.liquid.sample.components.GlassDebugOverlay
 import com.linrjk.liquid.sample.components.LiquidBottomTab
 import com.linrjk.liquid.sample.components.LiquidBottomTabs
+import com.linrjk.liquid.sample.components.rememberGlassDebugState
 
 @Composable
 fun BottomTabsContent() {
@@ -35,6 +37,8 @@ fun BottomTabsContent() {
     val iconColorFilter = ColorFilter.tint(contentColor)
 
     BackdropDemoScaffold { backdrop ->
+        val glass = rememberGlassDebugState()
+        GlassDebugOverlay(glass, backdrop) {
         Column(verticalArrangement = Arrangement.spacedBy(32f.dp)) {
             Block {
                 var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -44,7 +48,8 @@ fun BottomTabsContent() {
                     onTabSelected = { selectedTabIndex = it },
                     backdrop = backdrop,
                     tabsCount = 3,
-                    modifier = Modifier.padding(horizontal = 36f.dp)
+                    modifier = Modifier.padding(horizontal = 36f.dp),
+                    glass = glass
                 ) {
                     repeat(3) { index ->
                         LiquidBottomTab({ selectedTabIndex = index }) {
@@ -69,7 +74,8 @@ fun BottomTabsContent() {
                     onTabSelected = { selectedTabIndex = it },
                     backdrop = backdrop,
                     tabsCount = 4,
-                    modifier = Modifier.padding(horizontal = 36f.dp)
+                    modifier = Modifier.padding(horizontal = 36f.dp),
+                    glass = glass
                 ) {
                     repeat(4) { index ->
                         LiquidBottomTab({ selectedTabIndex = index }) {
@@ -86,6 +92,7 @@ fun BottomTabsContent() {
                     }
                 }
             }
+        }
         }
     }
 }

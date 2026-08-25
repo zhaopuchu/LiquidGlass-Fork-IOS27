@@ -29,7 +29,10 @@ suspend fun PointerInputScope.inspectDragGestures(
         val upEvent =
             drag(
                 pointerId = drag.id,
-                onDrag = { onDrag(it, it.positionChange()) }
+                onDrag = {
+                    val amount = it.positionChange()
+                    onDrag(it, amount)
+                }
             )
         if (upEvent == null) {
             onDragCancel()

@@ -18,7 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.linrjk.liquid.backdrops.rememberCanvasBackdrop
 import com.linrjk.liquid.sample.BackdropDemoScaffold
+import com.linrjk.liquid.sample.components.GlassDebugOverlay
 import com.linrjk.liquid.sample.components.LiquidToggle
+import com.linrjk.liquid.sample.components.rememberGlassDebugState
 import com.linrjk.liquid.shapes.RoundedRectangle
 
 @Composable
@@ -29,6 +31,8 @@ fun ToggleContent() {
         else Color(0xFF121212)
 
     BackdropDemoScaffold { backdrop ->
+        val glass = rememberGlassDebugState()
+        GlassDebugOverlay(glass, backdrop) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16f.dp)
@@ -39,7 +43,8 @@ fun ToggleContent() {
                 selected = { selected },
                 onSelect = { selected = it },
                 backdrop = backdrop,
-                modifier = Modifier.padding(horizontal = 32f.dp)
+                modifier = Modifier.padding(horizontal = 32f.dp),
+                glass = glass
             )
 
             Box(
@@ -53,9 +58,11 @@ fun ToggleContent() {
                     selected = { selected },
                     onSelect = { selected = it },
                     backdrop = rememberCanvasBackdrop { drawRect(backgroundColor) },
-                    modifier = Modifier.padding(horizontal = 32f.dp)
+                    modifier = Modifier.padding(horizontal = 32f.dp),
+                    glass = glass
                 )
             }
+        }
         }
     }
 }
