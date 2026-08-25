@@ -50,7 +50,7 @@ fun DialogContent() {
             drawRect(dimColor)
         }
     ) { backdrop ->
-        val glass = rememberGlassDebugState()
+        val glass = rememberGlassDebugState("Dialog")
         glass.cornerRadiusFrac
         glass.blurRadiusDp
         glass.refractionHeightFrac

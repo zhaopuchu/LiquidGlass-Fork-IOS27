@@ -37,7 +37,7 @@ fun BottomTabsContent() {
     val iconColorFilter = ColorFilter.tint(contentColor)
 
     BackdropDemoScaffold { backdrop ->
-        val glass = rememberGlassDebugState()
+        val glass = rememberGlassDebugState("BottomTabs")
         GlassDebugOverlay(glass, backdrop) {
         Column(verticalArrangement = Arrangement.spacedBy(32f.dp)) {
             Block {

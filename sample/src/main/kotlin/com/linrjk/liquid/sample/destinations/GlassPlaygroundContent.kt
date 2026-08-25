@@ -30,7 +30,7 @@ fun GlassPlaygroundContent() {
     val offsetAnimation = remember { Animatable(Offset.Zero, Offset.VectorConverter) }
     val zoomAnimation = remember { Animatable(1f) }
     val rotationAnimation = remember { Animatable(0f) }
-    val glass = rememberGlassDebugState()
+    val glass = rememberGlassDebugState("GlassPlayground")
     glass.cornerRadiusFrac
     glass.blurRadiusDp
     glass.refractionHeightFrac

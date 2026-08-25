@@ -17,7 +17,7 @@ import com.linrjk.liquid.sample.components.rememberGlassDebugState
 @Composable
 fun ButtonsContent() {
     BackdropDemoScaffold { backdrop ->
-        val glass = rememberGlassDebugState()
+        val glass = rememberGlassDebugState("Buttons")
         GlassDebugOverlay(glass, backdrop) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

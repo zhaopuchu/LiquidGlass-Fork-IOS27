@@ -31,7 +31,7 @@ fun SliderContent() {
         else Color(0xFF121212)
 
     BackdropDemoScaffold { backdrop ->
-        val glass = rememberGlassDebugState()
+        val glass = rememberGlassDebugState("Slider")
         GlassDebugOverlay(glass, backdrop) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

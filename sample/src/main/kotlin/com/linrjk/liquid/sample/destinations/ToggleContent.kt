@@ -31,7 +31,7 @@ fun ToggleContent() {
         else Color(0xFF121212)
 
     BackdropDemoScaffold { backdrop ->
-        val glass = rememberGlassDebugState()
+        val glass = rememberGlassDebugState("Toggle")
         GlassDebugOverlay(glass, backdrop) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
