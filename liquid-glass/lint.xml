@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <issue id="NewApi">
+        <!-- RuntimeShaderCache is only reached from the API 33-guarded runtimeShaderEffect path. -->
+        <ignore path="src/main/kotlin/com/linrjk/liquid/RuntimeShaderCache.kt" />
+    </issue>
+</lint>

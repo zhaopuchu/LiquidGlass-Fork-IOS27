@@ -1,0 +1,31 @@
+Liquid Glass Android Port
+
+This distribution is a pure Android derivative of the following Apache-2.0
+licensed projects by Kyant:
+
+1. AndroidLiquidGlass
+   Upstream: https://github.com/Kyant0/AndroidLiquidGlass
+   Baseline commit: b18eb0ff12c616546a68c72e7d0097f1ab286c87
+   Copyright 2025 Kyant
+
+2. Shapes
+   Upstream: https://github.com/Kyant0/Shapes
+   Baseline commit: acf86616d1f3e911e95e2e624cd86438c1426a17
+   Copyright 2026 Kyant
+
+Changes in this derivative:
+- Flattened commonMain and Android actual source sets into a pure Android library.
+- Changed Kotlin packages from com.kyant.backdrop and com.kyant.shapes to
+  com.linrjk.liquid and com.linrjk.liquid.shapes.
+- Embedded Shapes into the same AAR.
+- Ported the catalog to a separate Android sample application.
+
+The algorithms and AGSL shader implementations are retained from the upstream
+baseline except for package/import changes and the expect/actual flattening
+required by the Android-only project structure.
+
+The sample Ripple implementation retains its original Android Open Source
+Project copyright and Apache-2.0 notice in the source file.
+
+The upstream project names are used only to describe origin. This derivative is
+not endorsed by Kyant.
