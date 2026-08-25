@@ -43,23 +43,29 @@ highlight = {
 
 示例 App 的 `Glass playground` 页面提供 `Dark edge` 滑块，可实时调试强度。
 
-## Maven Local
+## JitPack
 
-当前迁移验证版本为 `2.0.0-android-SNAPSHOT`：
+在 `settings.gradle.kts` 中加入仓库：
 
 ```kotlin
-dependencies {
-    implementation("com.linrjk:liquid-glass:2.0.0-android-SNAPSHOT")
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
 }
 ```
 
-发布到本机仓库：
+当前 tag 为 `v1.0.0`：
 
-```shell
-./gradlew :liquid-glass:publishToMavenLocal
+```kotlin
+dependencies {
+    implementation("com.github.zhaopuchu:LiquidGlass-Fork-IOS27:v1.0.0")
+}
 ```
 
-远程仓库和正式版本号尚未配置。
+推送 GitHub tag 后，到 [JitPack](https://jitpack.io/#zhaopuchu/LiquidGlass-Fork-IOS27) 执行 Look up 即可构建该版本。仓库需公开，JitPack 才能免费构建。
 
 ## 源码与许可证
 

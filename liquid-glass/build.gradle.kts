@@ -70,32 +70,9 @@ afterEvaluate {
         publications {
             create<MavenPublication>("release") {
                 from(components["release"])
-                groupId = "com.linrjk"
-                artifactId = "liquid-glass"
-                version = "2.0.0-android-SNAPSHOT"
-
-                pom {
-                    name.set("Liquid Glass for Android")
-                    description.set(
-                        "A pure Android Jetpack Compose port of Kyant Liquid Glass 2.0 with Shapes embedded."
-                    )
-                    url.set("https://liquid-glass.linrjk.com")
-
-                    licenses {
-                        license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-                            distribution.set("repo")
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id.set("linrjk")
-                            name.set("linrjk")
-                        }
-                    }
-                }
+                groupId = "com.github.zhaopuchu"
+                artifactId = "LiquidGlass-Fork-IOS27"
+                version = "1.0.0"
             }
         }
     }

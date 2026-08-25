@@ -34,5 +34,5 @@ kotlin {
 }
 
 dependencies {
-    implementation("com.linrjk:liquid-glass:2.0.0-android-SNAPSHOT")
+    implementation("com.github.zhaopuchu:LiquidGlass-Fork-IOS27:v1.0.0")
 }
