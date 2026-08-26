@@ -42,21 +42,35 @@ class GlassDebugState internal constructor(
     internal val pageKey: String,
     cornerRadiusFrac: Float = 0.5f,
     componentSizeDp: Float = 96f,
+    componentWidthDp: Float = 240f,
+    componentHeightDp: Float = 48f,
     iconSizeDp: Float = 32f,
+    titleSizeSp: Float = 20f,
     blurRadiusDp: Float = 0f,
     refractionHeightFrac: Float = 0.2f,
     refractionAmountFrac: Float = 0.2f,
     chromaticAberration: Float = 0f,
-    edgeDarkening: Float = 0.18f
+    edgeDarkening: Float = 0.18f,
+    surfaceAlpha: Float = 0.6f,
+    backgroundDim: Float = 0.23f,
+    brightness: Float = 0.2f,
+    saturation: Float = 1.5f
 ) {
     var cornerRadiusFrac by mutableFloatStateOf(cornerRadiusFrac)
     var componentSizeDp by mutableFloatStateOf(componentSizeDp)
+    var componentWidthDp by mutableFloatStateOf(componentWidthDp)
+    var componentHeightDp by mutableFloatStateOf(componentHeightDp)
     var iconSizeDp by mutableFloatStateOf(iconSizeDp)
+    var titleSizeSp by mutableFloatStateOf(titleSizeSp)
     var blurRadiusDp by mutableFloatStateOf(blurRadiusDp)
     var refractionHeightFrac by mutableFloatStateOf(refractionHeightFrac)
     var refractionAmountFrac by mutableFloatStateOf(refractionAmountFrac)
     var chromaticAberration by mutableFloatStateOf(chromaticAberration)
     var edgeDarkening by mutableFloatStateOf(edgeDarkening)
+    var surfaceAlpha by mutableFloatStateOf(surfaceAlpha)
+    var backgroundDim by mutableFloatStateOf(backgroundDim)
+    var brightness by mutableFloatStateOf(brightness)
+    var saturation by mutableFloatStateOf(saturation)
 
     fun reset() {
         applyConfig(GlassDebugConfig())
@@ -66,24 +80,38 @@ class GlassDebugState internal constructor(
         return GlassDebugConfig(
             cornerRadiusFrac = cornerRadiusFrac,
             componentSizeDp = componentSizeDp,
+            componentWidthDp = componentWidthDp,
+            componentHeightDp = componentHeightDp,
             iconSizeDp = iconSizeDp,
+            titleSizeSp = titleSizeSp,
             blurRadiusDp = blurRadiusDp,
             refractionHeightFrac = refractionHeightFrac,
             refractionAmountFrac = refractionAmountFrac,
             chromaticAberration = chromaticAberration,
-            edgeDarkening = edgeDarkening
+            edgeDarkening = edgeDarkening,
+            surfaceAlpha = surfaceAlpha,
+            backgroundDim = backgroundDim,
+            brightness = brightness,
+            saturation = saturation
         )
     }
 
     internal fun applyConfig(config: GlassDebugConfig) {
         cornerRadiusFrac = config.cornerRadiusFrac
         componentSizeDp = config.componentSizeDp
+        componentWidthDp = config.componentWidthDp
+        componentHeightDp = config.componentHeightDp
         iconSizeDp = config.iconSizeDp
+        titleSizeSp = config.titleSizeSp
         blurRadiusDp = config.blurRadiusDp
         refractionHeightFrac = config.refractionHeightFrac
         refractionAmountFrac = config.refractionAmountFrac
         chromaticAberration = config.chromaticAberration
         edgeDarkening = config.edgeDarkening
+        surfaceAlpha = config.surfaceAlpha
+        backgroundDim = config.backgroundDim
+        brightness = config.brightness
+        saturation = config.saturation
     }
 
     fun roundedRectangle(maxCornerRadius: Dp): RoundedRectangle {
@@ -114,12 +142,59 @@ class GlassDebugState internal constructor(
 @Composable
 fun rememberGlassDebugState(
     pageKey: String,
-    fixedCornerRadiusFrac: Float? = null
+    fixedCornerRadiusFrac: Float? = null,
+    defaultComponentSizeDp: Float = 96f,
+    defaultComponentWidthDp: Float = 240f,
+    defaultComponentHeightDp: Float = 48f,
+    defaultIconSizeDp: Float = 32f,
+    defaultTitleSizeSp: Float = 20f,
+    defaultSurfaceAlpha: Float = 0.6f,
+    defaultBackgroundDim: Float = 0.23f,
+    defaultBrightness: Float = 0.2f,
+    defaultSaturation: Float = 1.5f
 ): GlassDebugState {
     val applicationContext = LocalContext.current.applicationContext
-    return remember(pageKey, fixedCornerRadiusFrac, applicationContext) {
-        GlassDebugState(pageKey).apply {
-            GlassDebugConfigStore(applicationContext).load(pageKey)?.let(::applyConfig)
+    return remember(
+        pageKey,
+        fixedCornerRadiusFrac,
+        defaultComponentSizeDp,
+        defaultComponentWidthDp,
+        defaultComponentHeightDp,
+        defaultIconSizeDp,
+        defaultTitleSizeSp,
+        defaultSurfaceAlpha,
+        defaultBackgroundDim,
+        defaultBrightness,
+        defaultSaturation,
+        applicationContext
+    ) {
+        val defaults =
+            GlassDebugConfig(
+                componentSizeDp = defaultComponentSizeDp,
+                componentWidthDp = defaultComponentWidthDp,
+                componentHeightDp = defaultComponentHeightDp,
+                iconSizeDp = defaultIconSizeDp,
+                titleSizeSp = defaultTitleSizeSp,
+                surfaceAlpha = defaultSurfaceAlpha,
+                backgroundDim = defaultBackgroundDim,
+                brightness = defaultBrightness,
+                saturation = defaultSaturation
+            )
+        GlassDebugState(
+            pageKey = pageKey,
+            componentSizeDp = defaultComponentSizeDp,
+            componentWidthDp = defaultComponentWidthDp,
+            componentHeightDp = defaultComponentHeightDp,
+            iconSizeDp = defaultIconSizeDp,
+            titleSizeSp = defaultTitleSizeSp,
+            surfaceAlpha = defaultSurfaceAlpha,
+            backgroundDim = defaultBackgroundDim,
+            brightness = defaultBrightness,
+            saturation = defaultSaturation
+        ).apply {
+            GlassDebugConfigStore(applicationContext)
+                .load(pageKey, defaults)
+                ?.let(::applyConfig)
             if (fixedCornerRadiusFrac != null) {
                 cornerRadiusFrac = fixedCornerRadiusFrac
             }
@@ -133,7 +208,12 @@ fun BoxScope.GlassDebugOverlay(
     backdrop: Backdrop,
     showCornerRadius: Boolean = true,
     showComponentSize: Boolean = false,
+    showComponentDimensions: Boolean = false,
+    showAppearanceControls: Boolean = false,
+    showColorControls: Boolean = false,
+    showSurfaceAlpha: Boolean = false,
     showIconSize: Boolean = false,
+    showTitleSize: Boolean = false,
     autoSave: Boolean = false,
     showReset: Boolean = true,
     onReset: () -> Unit = { state.reset() },
@@ -154,13 +234,20 @@ fun BoxScope.GlassDebugOverlay(
         }
     }
 
-    if (showComponentSize || showIconSize) {
-        LaunchedEffect(showComponentSize, showIconSize) {
+    if (showComponentSize || showComponentDimensions || showIconSize || showTitleSize) {
+        LaunchedEffect(showComponentSize, showComponentDimensions, showIconSize, showTitleSize) {
             if (showComponentSize) {
                 state.componentSizeDp = state.componentSizeDp.roundToInt().toFloat()
             }
+            if (showComponentDimensions) {
+                state.componentWidthDp = state.componentWidthDp.roundToInt().toFloat()
+                state.componentHeightDp = state.componentHeightDp.roundToInt().toFloat()
+            }
             if (showIconSize) {
                 state.iconSizeDp = state.iconSizeDp.roundToInt().toFloat()
+            }
+            if (showTitleSize) {
+                state.titleSizeSp = state.titleSizeSp.roundToInt().toFloat()
             }
         }
     }
@@ -204,7 +291,7 @@ fun BoxScope.GlassDebugOverlay(
                             GlassDebugSlider(
                                 "Width / height",
                                 { state.componentSizeDp },
-                                48f..200f,
+                                12f..200f,
                                 1f,
                                 sheetBackdrop,
                                 decimalPlaces = 0
@@ -223,7 +310,54 @@ fun BoxScope.GlassDebugOverlay(
                                     state.iconSizeDp = it.roundToInt().toFloat()
                                 }
                             }
-                        } else if (showCornerRadius) {
+                            if (showTitleSize) {
+                                GlassDebugSlider(
+                                    "Title size",
+                                    { state.titleSizeSp },
+                                    8f..48f,
+                                    1f,
+                                    sheetBackdrop,
+                                    decimalPlaces = 0
+                                ) {
+                                    state.titleSizeSp = it.roundToInt().toFloat()
+                                }
+                            }
+                        }
+                        if (showComponentDimensions) {
+                            GlassDebugSlider(
+                                "Width",
+                                { state.componentWidthDp },
+                                48f..360f,
+                                1f,
+                                sheetBackdrop,
+                                decimalPlaces = 0
+                            ) {
+                                state.componentWidthDp = it.roundToInt().toFloat()
+                            }
+                        }
+                        if (showAppearanceControls || showSurfaceAlpha) {
+                            GlassDebugSlider(
+                                "Surface alpha",
+                                { state.surfaceAlpha },
+                                0f..1f,
+                                0.001f,
+                                sheetBackdrop
+                            ) {
+                                state.surfaceAlpha = it
+                            }
+                        }
+                        if (showAppearanceControls) {
+                            GlassDebugSlider(
+                                "Background dim",
+                                { state.backgroundDim },
+                                0f..1f,
+                                0.001f,
+                                sheetBackdrop
+                            ) {
+                                state.backgroundDim = it
+                            }
+                        }
+                        if (showCornerRadius) {
                             GlassDebugSlider(
                                 "Corner radius",
                                 { state.cornerRadiusFrac },
@@ -245,6 +379,38 @@ fun BoxScope.GlassDebugOverlay(
                         Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(12f.dp)
                     ) {
+                        if (showComponentDimensions) {
+                            GlassDebugSlider(
+                                "Height",
+                                { state.componentHeightDp },
+                                32f..400f,
+                                1f,
+                                sheetBackdrop,
+                                decimalPlaces = 0
+                            ) {
+                                state.componentHeightDp = it.roundToInt().toFloat()
+                            }
+                        }
+                        if (showAppearanceControls || showColorControls) {
+                            GlassDebugSlider(
+                                "Brightness",
+                                { state.brightness },
+                                -1f..1f,
+                                0.001f,
+                                sheetBackdrop
+                            ) {
+                                state.brightness = it
+                            }
+                            GlassDebugSlider(
+                                "Saturation",
+                                { state.saturation },
+                                0f..2f,
+                                0.001f,
+                                sheetBackdrop
+                            ) {
+                                state.saturation = it
+                            }
+                        }
                         GlassDebugSlider("Refraction amount", { state.refractionAmountFrac }, 0f..1f, 0.001f, sheetBackdrop) {
                             state.refractionAmountFrac = it
                         }
