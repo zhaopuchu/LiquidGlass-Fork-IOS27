@@ -11,13 +11,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import com.linrjk.liquid.sample.destinations.AdaptiveLuminanceGlassContent
 import com.linrjk.liquid.sample.destinations.BottomTabsContent
-import com.linrjk.liquid.sample.destinations.ButtonsContent
+import com.linrjk.liquid.sample.destinations.ButtonContent
 import com.linrjk.liquid.sample.destinations.CircleButtonContent
 import com.linrjk.liquid.sample.destinations.ControlCenterContent
 import com.linrjk.liquid.sample.destinations.DialogContent
 import com.linrjk.liquid.sample.destinations.GlassPlaygroundContent
 import com.linrjk.liquid.sample.destinations.HomeContent
 import com.linrjk.liquid.sample.destinations.LazyScrollContainerContent
+import com.linrjk.liquid.sample.destinations.LiquidTopAppBarContent
 import com.linrjk.liquid.sample.destinations.LockScreenContent
 import com.linrjk.liquid.sample.destinations.MagnifierContent
 import com.linrjk.liquid.sample.destinations.ProgressiveBlurContent
@@ -39,8 +40,10 @@ fun MainContent() {
             CatalogDestination.Home -> HomeContent(onNavigate = { destination = it })
 
             CatalogDestination.CircleButton -> CircleButtonContent()
+            CatalogDestination.LiquidTopAppBar ->
+                LiquidTopAppBarContent(onBackClick = { destination = CatalogDestination.Home })
+            CatalogDestination.Button -> ButtonContent()
 
-            CatalogDestination.Buttons -> ButtonsContent()
             CatalogDestination.Toggle -> ToggleContent()
             CatalogDestination.Slider -> SliderContent()
             CatalogDestination.BottomTabs -> BottomTabsContent()

@@ -4,8 +4,9 @@ enum class CatalogDestination {
     Home,
 
     CircleButton,
+    LiquidTopAppBar,
 
-    Buttons,
+    Button,
     Toggle,
     Slider,
     BottomTabs,

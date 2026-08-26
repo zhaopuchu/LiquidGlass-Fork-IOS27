@@ -43,13 +43,14 @@ fun HomeContent(onNavigate: (CatalogDestination) -> Unit) {
         Column {
             Subtitle("Components")
             ListItem({ onNavigate(CatalogDestination.CircleButton) }, "Circle Button")
+            ListItem({ onNavigate(CatalogDestination.LiquidTopAppBar) }, "Liquid TopAppBar")
+            ListItem({ onNavigate(CatalogDestination.Button) }, "Button")
+            ListItem({ onNavigate(CatalogDestination.Dialog) }, "Dialog")
+            ListItem({ onNavigate(CatalogDestination.BottomTabs) }, "Bottom tabs")
 
             Subtitle("Liquid glass components")
-            ListItem({ onNavigate(CatalogDestination.Buttons) }, "Buttons")
             ListItem({ onNavigate(CatalogDestination.Toggle) }, "Toggle")
             ListItem({ onNavigate(CatalogDestination.Slider) }, "Slider")
-            ListItem({ onNavigate(CatalogDestination.BottomTabs) }, "Bottom tabs")
-            ListItem({ onNavigate(CatalogDestination.Dialog) }, "Dialog")
 
             Subtitle("System UIs")
             ListItem({ onNavigate(CatalogDestination.LockScreen) }, "Lock screen (SDF texture)")
