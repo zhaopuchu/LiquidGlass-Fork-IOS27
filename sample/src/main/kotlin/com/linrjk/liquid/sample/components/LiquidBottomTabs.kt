@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
@@ -64,6 +65,7 @@ fun LiquidBottomTabs(
     tabsCount: Int,
     modifier: Modifier = Modifier,
     glass: GlassDebugState? = null,
+    height: Dp = 64f.dp,
     content: @Composable RowScope.() -> Unit
 ) {
     glass?.cornerRadiusFrac
@@ -82,6 +84,7 @@ fun LiquidBottomTabs(
         else Color(0xFF121212).copy(0.4f)
 
     val tabsBackdrop = rememberLayerBackdrop()
+    val innerHeight = (height.value - 8f).coerceAtLeast(1f).dp
 
     BoxWithConstraints(
         modifier,
@@ -174,7 +177,7 @@ fun LiquidBottomTabs(
                 .drawBackdrop(
                     backdrop = backdrop,
                     shape = {
-                        if (glass != null) glass.roundedRectangle(32f.dp)
+                        if (glass != null) glass.roundedRectangle(height / 2f)
                         else Capsule()
                     },
                     effects = {
@@ -199,7 +202,7 @@ fun LiquidBottomTabs(
                     onDrawSurface = { drawRect(containerColor) }
                 )
                 .then(interactiveHighlight.modifier)
-                .height(64f.dp)
+                .height(height)
                 .fillMaxWidth()
                 .padding(4f.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -222,7 +225,7 @@ fun LiquidBottomTabs(
                     .drawBackdrop(
                         backdrop = backdrop,
                         shape = {
-                            if (glass != null) glass.roundedRectangle(28f.dp)
+                            if (glass != null) glass.roundedRectangle(innerHeight / 2f)
                             else Capsule()
                         },
                         effects = {
@@ -249,7 +252,7 @@ fun LiquidBottomTabs(
                         onDrawSurface = { drawRect(containerColor) }
                     )
                     .then(interactiveHighlight.modifier)
-                    .height(56f.dp)
+                    .height(innerHeight)
                     .fillMaxWidth()
                     .padding(horizontal = 4f.dp)
                     .graphicsLayer(colorFilter = ColorFilter.tint(accentColor)),
@@ -271,7 +274,7 @@ fun LiquidBottomTabs(
                 .drawBackdrop(
                     backdrop = rememberCombinedBackdrop(backdrop, tabsBackdrop),
                     shape = {
-                        if (glass != null) glass.roundedRectangle(28f.dp)
+                        if (glass != null) glass.roundedRectangle(innerHeight / 2f)
                         else Capsule()
                     },
                     effects = {
@@ -322,7 +325,7 @@ fun LiquidBottomTabs(
                         drawRect(Color.Black.copy(alpha = 0.03f * progress))
                     }
                 )
-                .height(56f.dp)
+                .height(innerHeight)
                 .fillMaxWidth(1f / tabsCount)
         )
     }

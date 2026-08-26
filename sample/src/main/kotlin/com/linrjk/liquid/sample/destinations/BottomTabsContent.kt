@@ -4,7 +4,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -37,62 +36,79 @@ fun BottomTabsContent() {
     val iconColorFilter = ColorFilter.tint(contentColor)
 
     BackdropDemoScaffold { backdrop ->
-        val glass = rememberGlassDebugState("BottomTabs")
-        GlassDebugOverlay(glass, backdrop) {
-        Column(verticalArrangement = Arrangement.spacedBy(32f.dp)) {
-            Block {
-                var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+        val glass =
+            rememberGlassDebugState(
+                pageKey = "BottomTabs",
+                defaultComponentWidthDp = 320f,
+                defaultComponentHeightDp = 64f
+            )
+        val tabsWidth = glass.componentWidthDp.dp
+        val tabsHeight = glass.componentHeightDp.dp
+        val tabsModifier = Modifier.size(tabsWidth, tabsHeight)
 
-                LiquidBottomTabs(
-                    selectedTabIndex = { selectedTabIndex },
-                    onTabSelected = { selectedTabIndex = it },
-                    backdrop = backdrop,
-                    tabsCount = 3,
-                    modifier = Modifier.padding(horizontal = 36f.dp),
-                    glass = glass
-                ) {
-                    repeat(3) { index ->
-                        LiquidBottomTab({ selectedTabIndex = index }) {
-                            Box(
-                                Modifier
-                                    .size(28f.dp)
-                                    .paint(airplaneModeIcon, colorFilter = iconColorFilter)
-                            )
-                            BasicText(
-                                "Tab ${index + 1}",
-                                style = TextStyle(contentColor, 12f.sp)
-                            )
+        GlassDebugOverlay(
+            state = glass,
+            backdrop = backdrop,
+            showComponentDimensions = true,
+            autoSave = true,
+            showReset = false
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(32f.dp)) {
+                Block {
+                    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+
+                    LiquidBottomTabs(
+                        selectedTabIndex = { selectedTabIndex },
+                        onTabSelected = { selectedTabIndex = it },
+                        backdrop = backdrop,
+                        tabsCount = 3,
+                        modifier = tabsModifier,
+                        glass = glass,
+                        height = tabsHeight
+                    ) {
+                        repeat(3) { index ->
+                            LiquidBottomTab({ selectedTabIndex = index }) {
+                                Box(
+                                    Modifier
+                                        .size(28f.dp)
+                                        .paint(airplaneModeIcon, colorFilter = iconColorFilter)
+                                )
+                                BasicText(
+                                    "Tab ${index + 1}",
+                                    style = TextStyle(contentColor, 12f.sp)
+                                )
+                            }
+                        }
+                    }
+                }
+                Block {
+                    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+
+                    LiquidBottomTabs(
+                        selectedTabIndex = { selectedTabIndex },
+                        onTabSelected = { selectedTabIndex = it },
+                        backdrop = backdrop,
+                        tabsCount = 4,
+                        modifier = tabsModifier,
+                        glass = glass,
+                        height = tabsHeight
+                    ) {
+                        repeat(4) { index ->
+                            LiquidBottomTab({ selectedTabIndex = index }) {
+                                Box(
+                                    Modifier
+                                        .size(28f.dp)
+                                        .paint(airplaneModeIcon, colorFilter = iconColorFilter)
+                                )
+                                BasicText(
+                                    "Tab ${index + 1}",
+                                    style = TextStyle(contentColor, 12f.sp)
+                                )
+                            }
                         }
                     }
                 }
             }
-            Block {
-                var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
-
-                LiquidBottomTabs(
-                    selectedTabIndex = { selectedTabIndex },
-                    onTabSelected = { selectedTabIndex = it },
-                    backdrop = backdrop,
-                    tabsCount = 4,
-                    modifier = Modifier.padding(horizontal = 36f.dp),
-                    glass = glass
-                ) {
-                    repeat(4) { index ->
-                        LiquidBottomTab({ selectedTabIndex = index }) {
-                            Box(
-                                Modifier
-                                    .size(28f.dp)
-                                    .paint(airplaneModeIcon, colorFilter = iconColorFilter)
-                            )
-                            BasicText(
-                                "Tab ${index + 1}",
-                                style = TextStyle(contentColor, 12f.sp)
-                            )
-                        }
-                    }
-                }
-            }
-        }
         }
     }
 }
