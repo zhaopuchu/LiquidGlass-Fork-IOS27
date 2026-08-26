@@ -1,6 +1,7 @@
 package com.linrjk.liquid.sample.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -23,16 +24,29 @@ fun CircleLiquidButton(
     size: Dp,
     modifier: Modifier = Modifier,
     glass: GlassDebugState? = null,
+    applyAppearance: Boolean = false,
     icon: ImageVector = MaterialBackIcon,
     iconSize: Dp = 32f.dp,
     iconTint: Color = Color.Black,
     contentDescription: String? = "Back"
 ) {
+    val surfaceColor =
+        if (applyAppearance && glass != null) {
+            val baseColor =
+                if (isSystemInDarkTheme()) Color(0xFF121212)
+                else Color(0xFFFAFAFA)
+            baseColor.copy(alpha = glass.surfaceAlpha)
+        } else {
+            Color.Unspecified
+        }
+
     LiquidButton(
         onClick = onClick,
         backdrop = backdrop,
         modifier = modifier.size(size),
+        surfaceColor = surfaceColor,
         glass = glass,
+        applyColorControls = applyAppearance,
         shape = CircleShape,
         height = size,
         horizontalContentPadding = 0f.dp

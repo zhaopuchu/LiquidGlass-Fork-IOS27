@@ -2,9 +2,11 @@ package com.linrjk.liquid.sample.destinations
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -15,10 +17,20 @@ import com.linrjk.liquid.sample.components.LiquidButton
 import com.linrjk.liquid.sample.components.rememberGlassDebugState
 
 @Composable
-fun ButtonsContent() {
+fun ButtonContent() {
     BackdropDemoScaffold { backdrop ->
         val glass = rememberGlassDebugState("Buttons")
-        GlassDebugOverlay(glass, backdrop) {
+        val buttonWidth = glass.componentWidthDp.dp
+        val buttonHeight = glass.componentHeightDp.dp
+        val buttonModifier = Modifier.size(buttonWidth, buttonHeight)
+
+        GlassDebugOverlay(
+            state = glass,
+            backdrop = backdrop,
+            showComponentDimensions = true,
+            autoSave = true,
+            showReset = false
+        ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16f.dp)
@@ -26,7 +38,9 @@ fun ButtonsContent() {
             LiquidButton(
                 {},
                 backdrop,
-                glass = glass
+                modifier = buttonModifier,
+                glass = glass,
+                height = buttonHeight
             ) {
                 BasicText(
                     "Transparent Liquid Button",
@@ -36,8 +50,10 @@ fun ButtonsContent() {
             LiquidButton(
                 {},
                 backdrop,
+                modifier = buttonModifier,
                 surfaceColor = Color.White.copy(0.3f),
-                glass = glass
+                glass = glass,
+                height = buttonHeight
             ) {
                 BasicText(
                     "Surface Liquid Button",
@@ -47,8 +63,10 @@ fun ButtonsContent() {
             LiquidButton(
                 {},
                 backdrop,
+                modifier = buttonModifier,
                 tint = Color(0xFF0088FF),
-                glass = glass
+                glass = glass,
+                height = buttonHeight
             ) {
                 BasicText(
                     "Tinted Liquid Button",
@@ -58,8 +76,10 @@ fun ButtonsContent() {
             LiquidButton(
                 {},
                 backdrop,
+                modifier = buttonModifier,
                 tint = Color(0xFFFF8D28),
-                glass = glass
+                glass = glass,
+                height = buttonHeight
             ) {
                 BasicText(
                     "Tinted Liquid Button",

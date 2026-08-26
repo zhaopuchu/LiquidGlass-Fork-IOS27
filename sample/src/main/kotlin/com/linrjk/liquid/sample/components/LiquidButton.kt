@@ -25,6 +25,7 @@ import com.linrjk.liquid.Backdrop
 import com.linrjk.liquid.sample.utils.InteractiveHighlight
 import com.linrjk.liquid.drawBackdrop
 import com.linrjk.liquid.effects.blur
+import com.linrjk.liquid.effects.colorControls
 import com.linrjk.liquid.effects.lens
 import com.linrjk.liquid.effects.vibrancy
 import com.linrjk.liquid.highlight.Highlight
@@ -44,6 +45,7 @@ fun LiquidButton(
     tint: Color = Color.Unspecified,
     surfaceColor: Color = Color.Unspecified,
     glass: GlassDebugState? = null,
+    applyColorControls: Boolean = false,
     shape: Shape? = null,
     height: Dp = 48f.dp,
     horizontalContentPadding: Dp = 16f.dp,
@@ -55,6 +57,10 @@ fun LiquidButton(
     glass?.refractionAmountFrac
     glass?.chromaticAberration
     glass?.edgeDarkening
+    if (applyColorControls) {
+        glass?.brightness
+        glass?.saturation
+    }
 
     val animationScope = rememberCoroutineScope()
 
@@ -75,6 +81,12 @@ fun LiquidButton(
                 },
                 effects = {
                     if (glass != null) {
+                        if (applyColorControls) {
+                            colorControls(
+                                brightness = glass.brightness,
+                                saturation = glass.saturation
+                            )
+                        }
                         glass.applyEffects(this)
                     } else {
                         vibrancy()
