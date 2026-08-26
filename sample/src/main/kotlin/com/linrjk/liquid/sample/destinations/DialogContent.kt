@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,12 +38,26 @@ fun DialogContent() {
     val accentColor =
         if (isLightTheme) Color(0xFF0088FF)
         else Color(0xFF0091FF)
-    val containerColor =
-        if (isLightTheme) Color(0xFFFAFAFA).copy(0.6f)
-        else Color(0xFF121212).copy(0.4f)
-    val dimColor =
-        if (isLightTheme) Color(0xFF29293A).copy(0.23f)
-        else Color(0xFF121212).copy(0.56f)
+    val containerBaseColor =
+        if (isLightTheme) Color(0xFFFAFAFA)
+        else Color(0xFF121212)
+    val dimBaseColor =
+        if (isLightTheme) Color(0xFF29293A)
+        else Color(0xFF121212)
+    val glass =
+        rememberGlassDebugState(
+            pageKey = "Dialog",
+            defaultComponentWidthDp = 320f,
+            defaultComponentHeightDp = 280f,
+            defaultSurfaceAlpha = if (isLightTheme) 0.6f else 0.4f,
+            defaultBackgroundDim = if (isLightTheme) 0.23f else 0.56f,
+            defaultBrightness = if (isLightTheme) 0.2f else 0f,
+            defaultSaturation = 1.5f
+        )
+    val dialogWidth = glass.componentWidthDp.dp
+    val dialogHeight = glass.componentHeightDp.dp
+    val containerColor = containerBaseColor.copy(alpha = glass.surfaceAlpha)
+    val dimColor = dimBaseColor.copy(alpha = glass.backgroundDim)
 
     BackdropDemoScaffold(
         Modifier.drawWithContent {
@@ -50,31 +65,36 @@ fun DialogContent() {
             drawRect(dimColor)
         }
     ) { backdrop ->
-        val glass = rememberGlassDebugState("Dialog")
         glass.cornerRadiusFrac
         glass.blurRadiusDp
         glass.refractionHeightFrac
         glass.refractionAmountFrac
         glass.chromaticAberration
         glass.edgeDarkening
-        GlassDebugOverlay(glass, backdrop) {
+        GlassDebugOverlay(
+            state = glass,
+            backdrop = backdrop,
+            showComponentDimensions = true,
+            showAppearanceControls = true,
+            autoSave = true,
+            showReset = false
+        ) {
         Column(
             Modifier
-                .padding(40f.dp)
+                .size(dialogWidth, dialogHeight)
                 .drawBackdrop(
                     backdrop = backdrop,
                     shape = { glass.roundedRectangle(48f.dp) },
                     effects = {
                         colorControls(
-                            brightness = if (isLightTheme) 0.2f else 0f,
-                            saturation = 1.5f
+                            brightness = glass.brightness,
+                            saturation = glass.saturation
                         )
                         glass.applyEffects(this)
                     },
                     highlight = { glass.highlight() },
                     onDrawSurface = { drawRect(containerColor) }
                 )
-                .fillMaxWidth()
         ) {
             BasicText(
                 "Dialog Title",
