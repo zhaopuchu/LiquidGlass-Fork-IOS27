@@ -48,6 +48,24 @@ float2 gradSdRoundedRect(float2 coord, float2 halfSize, float radius) {
 }"""
 
 @Language("AGSL")
+private const val RimFactor = """
+float rimFactor(float2 coord, float2 rectSize, float4 radii, float lightAngle) {
+    float2 halfSize = rectSize * 0.5;
+    float2 centeredCoord = coord - halfSize;
+    float radius = radiusAt(centeredCoord, radii);
+
+    float gradRadius = min(radius * 1.5, min(halfSize.x, halfSize.y));
+    float2 grad = gradSdRoundedRect(centeredCoord, halfSize, gradRadius);
+    float2 normal = float2(cos(lightAngle), sin(lightAngle));
+    return clamp(dot(grad, normal), -1.0, 1.0);
+}
+
+float smoothRimRamp(float rim) {
+    float position = clamp(rim * 0.5 + 0.5, 0.0, 1.0);
+    return position * position * position * (position * (position * 6.0 - 15.0) + 10.0);
+}"""
+
+@Language("AGSL")
 internal const val RoundedRectRefractionShaderString = """
 uniform shader content;
 
@@ -164,19 +182,18 @@ uniform float4 cornerRadii;
 layout(color) uniform half4 color;
 uniform float angle;
 uniform float falloff;
+uniform float ambient;
+uniform float edgeBlend;
 
 $RoundedRectSDF
+$RimFactor
 
 half4 main(float2 coord) {
-    float2 halfSize = size * 0.5;
-    float2 centeredCoord = coord - halfSize;
-    float radius = radiusAt(centeredCoord, cornerRadii);
-    
-    float gradRadius = min(radius * 1.5, min(halfSize.x, halfSize.y));
-    float2 grad = gradSdRoundedRect(centeredCoord, halfSize, gradRadius);
-    float2 normal = float2(cos(angle), sin(angle));
-    float d = dot(grad, normal);
-    float intensity = pow(abs(d), falloff);
+    float d = rimFactor(coord, size, cornerRadii, angle);
+    float symmetricIntensity = pow(abs(d), falloff);
+    float directionalIntensity = pow(smoothRimRamp(-d), falloff);
+    float rimIntensity = mix(symmetricIntensity, directionalIntensity, edgeBlend);
+    float intensity = mix(ambient, 1.0, rimIntensity);
     return color * intensity;
 }"""
 
@@ -188,17 +205,30 @@ uniform float angle;
 uniform float falloff;
 
 $RoundedRectSDF
+$RimFactor
 
 half4 main(float2 coord) {
-    float2 halfSize = size * 0.5;
-    float2 centeredCoord = coord - halfSize;
-    float radius = radiusAt(centeredCoord, cornerRadii);
-    
-    float gradRadius = min(radius * 1.5, min(halfSize.x, halfSize.y));
-    float2 grad = gradSdRoundedRect(centeredCoord, halfSize, gradRadius);
-    float2 normal = float2(cos(angle), sin(angle));
-    float d = dot(grad, normal);
+    float d = rimFactor(coord, size, cornerRadii, angle);
     float intensity = pow(abs(d), falloff);
-    float t = step(0.0, d);
+    float t = smoothRimRamp(d);
     return half4(t, t, t, 1.0) * intensity;
+}"""
+
+@Language("AGSL")
+internal const val DarkEdgeShaderString = """
+uniform float2 size;
+uniform float4 cornerRadii;
+layout(color) uniform half4 color;
+uniform float angle;
+uniform float directionality;
+uniform float falloff;
+
+$RoundedRectSDF
+$RimFactor
+
+half4 main(float2 coord) {
+    float d = abs(rimFactor(coord, size, cornerRadii, angle));
+    float shade = 1.0 - pow(d, falloff);
+    float intensity = mix(1.0 - directionality, 1.0, shade);
+    return color * intensity;
 }"""

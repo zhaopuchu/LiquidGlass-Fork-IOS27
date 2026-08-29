@@ -48,7 +48,9 @@ interface HighlightStyle {
         override val color: Color = Color.White.copy(alpha = 0.5f),
         override val blendMode: BlendMode = BlendMode.Plus,
         val angle: Float = 45f,
-        @param:FloatRange(from = 0.0) val falloff: Float = 1f
+        @param:FloatRange(from = 0.0) val falloff: Float = 1f,
+        @param:FloatRange(from = 0.0, to = 1.0) val ambient: Float = 0f,
+        @param:FloatRange(from = 0.0, to = 1.0) val edgeBlend: Float = 0f
     ) : HighlightStyle {
 
         override fun DrawScope.createShader(
@@ -65,6 +67,8 @@ interface HighlightStyle {
                     setColorUniform("color", color.copy(alpha = 1f))
                     setFloatUniform("angle", angle * (PI / 180f).toFloat())
                     setFloatUniform("falloff", falloff)
+                    setFloatUniform("ambient", ambient)
+                    setFloatUniform("edgeBlend", edgeBlend)
                 }
             } else {
                 null

@@ -3,6 +3,7 @@ package com.linrjk.liquid
 import android.os.Build
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -10,6 +11,8 @@ import com.linrjk.liquid.effects.blur
 import com.linrjk.liquid.effects.effect
 import com.linrjk.liquid.effects.lens
 import com.linrjk.liquid.effects.runtimeShaderEffect
+import com.linrjk.liquid.internal.DarkEdgeShaderString
+import com.linrjk.liquid.internal.DefaultHighlightShaderString
 import com.linrjk.liquid.shapes.Rectangle
 import com.linrjk.liquid.shapes.RoundedRectangle
 import org.junit.Assert.assertEquals
@@ -85,6 +88,41 @@ class PlatformBehaviorInstrumentedTest {
         scope.runtimeShaderEffect("passthrough", shader, "content") {}
 
         assertNotNull(scope.renderEffect)
+    }
+
+    @Test
+    fun highlightShaderCompilesOnAndroid13AndLater() {
+        assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        val radii = floatArrayOf(24f, 24f, 24f, 24f)
+
+        val highlightShader = RuntimeShader(DefaultHighlightShaderString).apply {
+            setFloatUniform("size", 256f, 128f)
+            setFloatUniform("cornerRadii", radii)
+            setColorUniform("color", Color.White)
+            setFloatUniform("angle", 0f)
+            setFloatUniform("falloff", 4f)
+            setFloatUniform("ambient", 0f)
+            setFloatUniform("edgeBlend", 1f)
+        }
+
+        assertNotNull(highlightShader)
+    }
+
+    @Test
+    fun darkEdgeShaderCompilesOnAndroid13AndLater() {
+        assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        val radii = floatArrayOf(24f, 24f, 24f, 24f)
+
+        val darkEdgeShader = RuntimeShader(DarkEdgeShaderString).apply {
+            setFloatUniform("size", 256f, 128f)
+            setFloatUniform("cornerRadii", radii)
+            setColorUniform("color", Color.Black)
+            setFloatUniform("angle", 0f)
+            setFloatUniform("directionality", 0.35f)
+            setFloatUniform("falloff", 4f)
+        }
+
+        assertNotNull(darkEdgeShader)
     }
 
     @Test

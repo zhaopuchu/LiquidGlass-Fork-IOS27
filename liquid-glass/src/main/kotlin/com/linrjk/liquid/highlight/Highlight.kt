@@ -29,8 +29,17 @@ data class Highlight(
         @Stable
         val IOS27: Highlight =
             Highlight(
+                width = DarkEdge.Default.width,
                 style = HighlightStyle.Default(angle = 90f, falloff = 4f),
                 darkEdge = DarkEdge.Default
             )
     }
+}
+
+internal fun Highlight.resolvedStrokeWidth(): Dp {
+    return darkEdge?.width ?: width
+}
+
+internal fun Highlight.resolvedBlurRadius(): Dp {
+    return if (darkEdge != null) 0f.dp else blurRadius
 }

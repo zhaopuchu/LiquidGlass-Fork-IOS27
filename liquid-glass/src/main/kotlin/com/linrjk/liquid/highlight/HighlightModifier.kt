@@ -95,7 +95,7 @@ internal class HighlightNode(
 
     override fun ContentDrawScope.draw() {
         val highlight = highlight()
-        if (highlight == null || highlight.width.value <= 0f) {
+        if (highlight == null || (highlight.darkEdge == null && highlight.width.value <= 0f)) {
             return drawContent()
         }
 
@@ -169,8 +169,8 @@ internal class HighlightNode(
         shape: Shape
     ) {
         highlightPaint.color = highlight.style.color
-        highlightPaint.strokeWidth = strokeWidth(highlight.width.toPx())
-        highlightPaint.blur(highlight.blurRadius.toPx())
+        highlightPaint.strokeWidth = strokeWidth(highlight.resolvedStrokeWidth().toPx())
+        highlightPaint.blur(highlight.resolvedBlurRadius().toPx())
         if (isRuntimeShaderSupported()) {
             val shader =
                 with(highlight.style) {
