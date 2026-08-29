@@ -168,6 +168,14 @@ fun LiquidBottomTabs(
                 }
             )
         }
+        val innerTabHighlight: () -> Highlight? = {
+            val progress = dampedDragAnimation.pressProgress
+            when {
+                progress <= 0f -> null
+                glass != null -> glass.highlight(0f).copy(alpha = progress)
+                else -> Highlight.Default.copy(alpha = progress)
+            }
+        }
 
         Row(
             Modifier
@@ -190,7 +198,7 @@ fun LiquidBottomTabs(
                         }
                     },
                     highlight = {
-                        if (glass != null) glass.highlight()
+                        if (glass != null) glass.highlight(spread = 1.dp)
                         else Highlight.Default
                     },
                     layerBlock = {
@@ -229,10 +237,10 @@ fun LiquidBottomTabs(
                             else Capsule()
                         },
                         effects = {
+                            val progress = dampedDragAnimation.pressProgress
                             if (glass != null) {
-                                glass.applyEffects(this)
+                                glass.applyEffects(this, progress)
                             } else {
-                                val progress = dampedDragAnimation.pressProgress
                                 vibrancy()
                                 blur(8f.dp.toPx())
                                 lens(
@@ -241,14 +249,7 @@ fun LiquidBottomTabs(
                                 )
                             }
                         },
-                        highlight = {
-                            if (glass != null) {
-                                glass.highlight()
-                            } else {
-                                val progress = dampedDragAnimation.pressProgress
-                                Highlight.Default.copy(alpha = progress)
-                            }
-                        },
+                        highlight = innerTabHighlight,
                         onDrawSurface = { drawRect(containerColor) }
                     )
                     .then(interactiveHighlight.modifier)
@@ -278,10 +279,10 @@ fun LiquidBottomTabs(
                         else Capsule()
                     },
                     effects = {
+                        val progress = dampedDragAnimation.pressProgress
                         if (glass != null) {
-                            glass.applyEffects(this)
+                            glass.applyEffects(this, progress)
                         } else {
-                            val progress = dampedDragAnimation.pressProgress
                             lens(
                                 10f.dp.toPx() * progress,
                                 14f.dp.toPx() * progress,
@@ -289,14 +290,7 @@ fun LiquidBottomTabs(
                             )
                         }
                     },
-                    highlight = {
-                        if (glass != null) {
-                            glass.highlight()
-                        } else {
-                            val progress = dampedDragAnimation.pressProgress
-                            Highlight.Default.copy(alpha = progress)
-                        }
-                    },
+                    highlight = innerTabHighlight,
                     shadow = {
                         val progress = dampedDragAnimation.pressProgress
                         Shadow(alpha = progress)

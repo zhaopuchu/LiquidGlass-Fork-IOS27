@@ -118,20 +118,27 @@ class GlassDebugState internal constructor(
         return RoundedRectangle(maxCornerRadius * cornerRadiusFrac)
     }
 
-    fun highlight(): Highlight {
+    fun highlight(
+        edgeDarkening: Float = this.edgeDarkening,
+        spread: Dp = DarkEdge.Default.spread
+    ): Highlight {
         return Highlight.IOS27.copy(
-            darkEdge = DarkEdge.Default.copy(alpha = edgeDarkening)
+            darkEdge = DarkEdge.Default.copy(
+                alpha = edgeDarkening,
+                spread = spread
+            )
         )
     }
 
-    fun applyEffects(scope: BackdropEffectScope) {
+    fun applyEffects(scope: BackdropEffectScope, intensity: Float = 1f) {
         with(scope) {
             vibrancy()
             blur(blurRadiusDp.dp.toPx())
+            val amount = intensity.coerceIn(0f, 1f)
             val minDimension = size.minDimension
             lens(
-                refractionHeight = refractionHeightFrac * minDimension * 0.5f,
-                refractionAmount = refractionAmountFrac * minDimension,
+                refractionHeight = refractionHeightFrac * minDimension * 0.5f * amount,
+                refractionAmount = refractionAmountFrac * minDimension * amount,
                 depthEffect = true,
                 chromaticAberration = chromaticAberration > 0f
             )
