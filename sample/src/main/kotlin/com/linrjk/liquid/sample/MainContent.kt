@@ -18,6 +18,7 @@ import com.linrjk.liquid.sample.destinations.DialogContent
 import com.linrjk.liquid.sample.destinations.GlassPlaygroundContent
 import com.linrjk.liquid.sample.destinations.HomeContent
 import com.linrjk.liquid.sample.destinations.LazyScrollContainerContent
+import com.linrjk.liquid.sample.destinations.LiquidCardContent
 import com.linrjk.liquid.sample.destinations.LiquidTopAppBarContent
 import com.linrjk.liquid.sample.destinations.LockScreenContent
 import com.linrjk.liquid.sample.destinations.MagnifierContent
@@ -42,6 +43,7 @@ fun MainContent() {
             CatalogDestination.CircleButton -> CircleButtonContent()
             CatalogDestination.LiquidTopAppBar ->
                 LiquidTopAppBarContent(onBackClick = { destination = CatalogDestination.Home })
+            CatalogDestination.LiquidCard -> LiquidCardContent()
             CatalogDestination.Button -> ButtonContent()
 
             CatalogDestination.Toggle -> ToggleContent()

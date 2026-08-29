@@ -5,6 +5,7 @@ enum class CatalogDestination {
 
     CircleButton,
     LiquidTopAppBar,
+    LiquidCard,
 
     Button,
     Toggle,

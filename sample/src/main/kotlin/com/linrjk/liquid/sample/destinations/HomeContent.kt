@@ -44,6 +44,7 @@ fun HomeContent(onNavigate: (CatalogDestination) -> Unit) {
             Subtitle("Components")
             ListItem({ onNavigate(CatalogDestination.CircleButton) }, "Circle Button")
             ListItem({ onNavigate(CatalogDestination.LiquidTopAppBar) }, "Liquid TopAppBar")
+            ListItem({ onNavigate(CatalogDestination.LiquidCard) }, "Liquid Card")
             ListItem({ onNavigate(CatalogDestination.Button) }, "Button")
             ListItem({ onNavigate(CatalogDestination.Dialog) }, "Dialog")
             ListItem({ onNavigate(CatalogDestination.BottomTabs) }, "Bottom tabs")
