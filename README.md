@@ -2,7 +2,7 @@
 
 [![](https://jitpack.io/v/zhaopuchu/LiquidGlass-Fork-IOS27.svg)](https://jitpack.io/#zhaopuchu/LiquidGlass-Fork-IOS27)
 
-纯 Android、Jetpack Compose 的 Liquid Glass 库。当前版本：**v1.2.0**
+纯 Android、Jetpack Compose 的 Liquid Glass 库。当前版本：**v1.3.0**
 
 - minSdk 23
 - API 31+：RenderEffect、Blur、ColorFilter
@@ -44,7 +44,7 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-    implementation("com.github.zhaopuchu:LiquidGlass-Fork-IOS27:v1.2.0")
+    implementation("com.github.zhaopuchu:LiquidGlass-Fork-IOS27:v1.3.0")
 }
 ```
 
@@ -52,7 +52,7 @@ Groovy：
 
 ```groovy
 dependencies {
-    implementation 'com.github.zhaopuchu:LiquidGlass-Fork-IOS27:v1.2.0'
+    implementation 'com.github.zhaopuchu:LiquidGlass-Fork-IOS27:v1.3.0'
 }
 ```
 
