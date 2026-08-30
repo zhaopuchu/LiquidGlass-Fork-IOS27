@@ -21,20 +21,27 @@ data class Highlight(
         val Default: Highlight = Highlight()
 
         @Stable
-        val Ambient: Highlight = Highlight(style = HighlightStyle.Ambient)
-
-        @Stable
         val Plain: Highlight = Highlight(style = HighlightStyle.Plain)
 
         @Stable
         val IOS27: Highlight =
             Highlight(
-                width = DarkEdge.Default.width,
-                style = HighlightStyle.Default(angle = 90f, falloff = 4f),
-                darkEdge = DarkEdge.Default
+                width = Ios27StrokeWidth,
+                style = HighlightStyle.IOS27,
+                darkEdge = Ios27DarkEdge
             )
     }
 }
+
+internal val Ios27StrokeWidth = 0.5f.dp
+
+internal val Ios27DarkEdge: DarkEdge =
+    DarkEdge(
+        width = Ios27StrokeWidth,
+        spread = 0f.dp,
+        blurRadius = 0f.dp,
+        directionality = 0f
+    )
 
 internal fun Highlight.resolvedStrokeWidth(): Dp {
     return darkEdge?.width ?: width

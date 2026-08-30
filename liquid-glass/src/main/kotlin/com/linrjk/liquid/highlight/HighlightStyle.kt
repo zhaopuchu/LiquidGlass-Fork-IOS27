@@ -13,8 +13,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastCoerceAtMost
 import com.linrjk.liquid.RuntimeShader
 import com.linrjk.liquid.RuntimeShaderCache
-import com.linrjk.liquid.internal.AmbientHighlightShaderString
 import com.linrjk.liquid.internal.DefaultHighlightShaderString
+import com.linrjk.liquid.internal.IOS27DarkEdgeShaderString
+import com.linrjk.liquid.internal.IOS27HighlightShaderString
 import com.linrjk.liquid.isRuntimeShaderSupported
 import com.linrjk.liquid.shapes.RoundedRectangularShape
 import kotlin.math.PI
@@ -77,13 +78,17 @@ interface HighlightStyle {
     }
 
     @Immutable
-    data class Ambient(
-        @param:FloatRange(from = 0.0, to = 1.0) val intensity: Float = 0.38f
+    data class IOS27(
+        override val color: Color = Color.White,
+        override val blendMode: BlendMode = BlendMode.Plus,
+        // falloff 只管延伸范围：越大高光越向正上正下收窄。
+        @param:FloatRange(from = 0.0) val falloff: Float = 16f,
+        // gain 只管核心亮度：大于 1 时正上正下会形成一段饱和的亮带。
+        @param:FloatRange(from = 0.0) val gain: Float = 2.5f,
+        // 暗边在高光核心处的淡出比例，1 表示核心处完全透明。
+        // 取 0.5 让核心处保留一半强度：既能衬出亮线，又不至于把描边断开。
+        @param:FloatRange(from = 0.0, to = 1.0) val darkEdgeFade: Float = 0.5f
     ) : HighlightStyle {
-
-        override val color: Color = Color.White.copy(alpha = intensity)
-
-        override val blendMode: BlendMode = DrawScope.DefaultBlendMode
 
         override fun DrawScope.createShader(
             shape: Shape,
@@ -91,13 +96,40 @@ interface HighlightStyle {
         ): RuntimeShader? {
             return if (isRuntimeShaderSupported()) {
                 runtimeShaderCache.obtainRuntimeShader(
-                    "Ambient",
-                    AmbientHighlightShaderString
+                    "IOS27",
+                    IOS27HighlightShaderString
                 ).apply {
                     setFloatUniform("size", size.width, size.height)
                     setFloatUniform("cornerRadii", getCornerRadii(shape))
-                    setFloatUniform("angle", 45f * (PI / 180f).toFloat())
-                    setFloatUniform("falloff", 1f)
+                    setColorUniform("color", color.copy(alpha = 1f))
+                    setFloatUniform("falloff", falloff)
+                    setFloatUniform("gain", gain)
+                }
+            } else {
+                null
+            }
+        }
+
+        /**
+         * 暗边专用着色器：沿周长按 [darkEdgeFade] 在顶/底高光核心处淡出。
+         * 必须用独立的缓存键，否则会和高光共用同一个 RuntimeShader 实例而互相覆盖 uniform。
+         */
+        internal fun DrawScope.createDarkEdgeFadeShader(
+            darkEdge: DarkEdge,
+            shape: Shape,
+            runtimeShaderCache: RuntimeShaderCache
+        ): RuntimeShader? {
+            return if (isRuntimeShaderSupported()) {
+                runtimeShaderCache.obtainRuntimeShader(
+                    "IOS27DarkEdge",
+                    IOS27DarkEdgeShaderString
+                ).apply {
+                    setFloatUniform("size", size.width, size.height)
+                    setFloatUniform("cornerRadii", getCornerRadii(shape))
+                    setColorUniform("color", darkEdge.color.copy(alpha = 1f))
+                    setFloatUniform("falloff", falloff)
+                    setFloatUniform("gain", gain)
+                    setFloatUniform("fade", darkEdgeFade)
                 }
             } else {
                 null
@@ -111,10 +143,10 @@ interface HighlightStyle {
         val Default: Default = Default()
 
         @Stable
-        val Ambient: Ambient = Ambient()
+        val Plain: Plain = Plain()
 
         @Stable
-        val Plain: Plain = Plain()
+        val IOS27: IOS27 = IOS27()
     }
 }
 

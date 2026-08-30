@@ -52,11 +52,15 @@ fun LiquidButton(
     content: @Composable RowScope.() -> Unit
 ) {
     glass?.cornerRadiusFrac
+    glass?.componentSizeDp
+    glass?.iconSizeDp
     glass?.blurRadiusDp
     glass?.refractionHeightFrac
     glass?.refractionAmountFrac
     glass?.chromaticAberration
     glass?.edgeDarkening
+    glass?.presetIndex
+    glass?.readHighlightParams()
     if (applyColorControls) {
         glass?.brightness
         glass?.saturation

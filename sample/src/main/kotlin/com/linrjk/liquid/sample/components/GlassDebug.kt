@@ -4,23 +4,32 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,10 +42,101 @@ import com.linrjk.liquid.effects.lens
 import com.linrjk.liquid.effects.vibrancy
 import com.linrjk.liquid.highlight.DarkEdge
 import com.linrjk.liquid.highlight.Highlight
+import com.linrjk.liquid.highlight.HighlightStyle
 import com.linrjk.liquid.sample.Block
 import com.linrjk.liquid.shapes.RoundedRectangle
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
+
+internal val SampleAccentBlue = Color(0xFF0088FF)
+internal val SampleAccentOrange = Color(0xFFFF8D28)
+
+private const val SampleTintMaxIndex = 2
+
+internal fun sampleAccentColor(index: Int): Color {
+    return when (index) {
+        1 -> SampleAccentOrange
+        2 -> Color.Unspecified
+        else -> SampleAccentBlue
+    }
+}
+
+internal fun sampleAccentLabel(index: Int): String {
+    return when (index) {
+        1 -> "Orange"
+        2 -> "Clear"
+        else -> "Blue"
+    }
+}
+
+private const val SamplePresetMaxIndex = 1
+private const val HighlightPresetDefault = 0
+private const val HighlightPresetIos27 = 1
+
+internal val HighlightPresetLabels = listOf("Highlight", "iOS 27")
+
+internal fun highlightPresetLabel(index: Int): String {
+    return HighlightPresetLabels.getOrElse(index.coerceIn(0, SamplePresetMaxIndex)) {
+        HighlightPresetLabels[HighlightPresetIos27]
+    }
+}
+
+/**
+ * 高光预设的一个可调参数。滑块、默认值、持久化都以这里的定义为准，
+ * 想再暴露一个参数只需要在下面的列表里加一行。
+ */
+internal class HighlightParam(
+    val key: String,
+    val label: String,
+    val range: ClosedFloatingPointRange<Float>,
+    val default: Float,
+    val step: Float = 0.001f,
+    val decimalPlaces: Int = 2
+)
+
+// Highlight（Default）预设：默认值对齐 Highlight.Default 与 HighlightStyle.Default。
+private val DefaultHighlightWidth = HighlightParam("d_width", "Width (dp)", 0f..4f, 0.5f, 0.01f)
+private val DefaultHighlightBlur = HighlightParam("d_blur", "Blur (dp)", 0f..4f, 0.25f, 0.01f)
+private val DefaultHighlightAlpha = HighlightParam("d_alpha", "Layer alpha", 0f..1f, 1f)
+private val DefaultHighlightColorAlpha = HighlightParam("d_color_alpha", "Color alpha", 0f..1f, 0.5f)
+private val DefaultHighlightAngle =
+    HighlightParam("d_angle", "Light angle", 0f..360f, 45f, 1f, decimalPlaces = 0)
+private val DefaultHighlightFalloff = HighlightParam("d_falloff", "Falloff", 0f..8f, 1f, 0.01f)
+private val DefaultHighlightAmbient = HighlightParam("d_ambient", "Ambient", 0f..1f, 0f)
+private val DefaultHighlightEdgeBlend = HighlightParam("d_edge_blend", "Edge blend", 0f..1f, 0f)
+
+// iOS 27 预设：默认值对齐 Highlight.IOS27 与 HighlightStyle.IOS27。
+// 该预设下 Highlight.blurRadius 恒为 0、描边宽度取自暗边，所以只暴露一个 Stroke width。
+private val Ios27StrokeWidth = HighlightParam("i_width", "Stroke width (dp)", 0f..4f, 0.5f, 0.01f)
+private val Ios27HighlightAlpha = HighlightParam("i_alpha", "Layer alpha", 0f..1f, 1f)
+private val Ios27HighlightColorAlpha = HighlightParam("i_color_alpha", "Color alpha", 0f..1f, 1f)
+private val Ios27Falloff = HighlightParam("i_falloff", "Falloff", 0f..16f, 16f, 0.01f)
+private val Ios27Gain = HighlightParam("i_gain", "Gain", 0f..8f, 2.5f, 0.01f)
+private val Ios27DarkEdgeFade = HighlightParam("i_dark_fade", "Dark edge fade", 0f..1f, 0.5f)
+
+private val DefaultPresetParams =
+    listOf(
+        DefaultHighlightWidth,
+        DefaultHighlightBlur,
+        DefaultHighlightAlpha,
+        DefaultHighlightColorAlpha,
+        DefaultHighlightAngle,
+        DefaultHighlightFalloff,
+        DefaultHighlightAmbient,
+        DefaultHighlightEdgeBlend
+    )
+
+private val Ios27PresetParams =
+    listOf(
+        Ios27StrokeWidth,
+        Ios27HighlightAlpha,
+        Ios27HighlightColorAlpha,
+        Ios27Falloff,
+        Ios27Gain,
+        Ios27DarkEdgeFade
+    )
+
+internal val AllHighlightParams = DefaultPresetParams + Ios27PresetParams
 
 class GlassDebugState internal constructor(
     internal val pageKey: String,
@@ -54,7 +154,9 @@ class GlassDebugState internal constructor(
     surfaceAlpha: Float = 0.6f,
     backgroundDim: Float = 0.23f,
     brightness: Float = 0.2f,
-    saturation: Float = 1.5f
+    saturation: Float = 1.5f,
+    tintIndex: Int = 0,
+    presetIndex: Int = HighlightPresetIos27
 ) {
     var cornerRadiusFrac by mutableFloatStateOf(cornerRadiusFrac)
     var componentSizeDp by mutableFloatStateOf(componentSizeDp)
@@ -71,6 +173,41 @@ class GlassDebugState internal constructor(
     var backgroundDim by mutableFloatStateOf(backgroundDim)
     var brightness by mutableFloatStateOf(brightness)
     var saturation by mutableFloatStateOf(saturation)
+    var tintIndex by mutableIntStateOf(tintIndex.coerceIn(0, SampleTintMaxIndex))
+    var presetIndex by mutableIntStateOf(presetIndex.coerceIn(0, SamplePresetMaxIndex))
+
+    // 只存放被改过的高光参数，没有条目就回落到参数定义里的默认值。
+    private val highlightParamValues = mutableStateMapOf<String, Float>()
+
+    val tintColor: Color
+        get() = sampleAccentColor(tintIndex)
+
+    internal fun highlightParam(param: HighlightParam): Float {
+        return highlightParamValues[param.key] ?: param.default
+    }
+
+    internal fun setHighlightParam(param: HighlightParam, value: Float) {
+        highlightParamValues[param.key] =
+            value.coerceIn(param.range.start, param.range.endInclusive)
+    }
+
+    internal fun presetParams(): List<HighlightParam> {
+        return if (presetIndex == HighlightPresetDefault) DefaultPresetParams
+        else Ios27PresetParams
+    }
+
+    /**
+     * 供玻璃组件在组合期调用。
+     * drawBackdrop 的 highlight lambda 只在绘制期读状态，本身不会触发失效，
+     * 必须在组合期把这些参数读一遍，改动才能引起重组 → 重新下发 lambda → 重绘。
+     */
+    internal fun readHighlightParams() {
+        presetParams().forEach { highlightParam(it) }
+    }
+
+    fun applyPreset(index: Int) {
+        presetIndex = index.coerceIn(0, SamplePresetMaxIndex)
+    }
 
     fun reset() {
         applyConfig(GlassDebugConfig())
@@ -92,7 +229,10 @@ class GlassDebugState internal constructor(
             surfaceAlpha = surfaceAlpha,
             backgroundDim = backgroundDim,
             brightness = brightness,
-            saturation = saturation
+            saturation = saturation,
+            tintIndex = tintIndex,
+            presetIndex = presetIndex,
+            highlightParams = highlightParamValues.toMap()
         )
     }
 
@@ -112,22 +252,63 @@ class GlassDebugState internal constructor(
         backgroundDim = config.backgroundDim
         brightness = config.brightness
         saturation = config.saturation
+        tintIndex = config.tintIndex.coerceIn(0, SampleTintMaxIndex)
+        presetIndex = config.presetIndex.coerceIn(0, SamplePresetMaxIndex)
+        highlightParamValues.clear()
+        highlightParamValues.putAll(config.highlightParams)
     }
 
     fun roundedRectangle(maxCornerRadius: Dp): RoundedRectangle {
         return RoundedRectangle(maxCornerRadius * cornerRadiusFrac)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun highlight(
         edgeDarkening: Float = this.edgeDarkening,
         spread: Dp = DarkEdge.Default.spread
     ): Highlight {
-        return Highlight.IOS27.copy(
-            darkEdge = DarkEdge.Default.copy(
-                alpha = edgeDarkening,
-                spread = spread
-            )
-        )
+        return when (presetIndex) {
+            HighlightPresetDefault ->
+                Highlight(
+                    width = highlightParam(DefaultHighlightWidth).dp,
+                    blurRadius = highlightParam(DefaultHighlightBlur).dp,
+                    alpha = highlightParam(DefaultHighlightAlpha),
+                    style =
+                        HighlightStyle.Default(
+                            color =
+                                Color.White.copy(
+                                    alpha = highlightParam(DefaultHighlightColorAlpha)
+                                ),
+                            angle = highlightParam(DefaultHighlightAngle),
+                            falloff = highlightParam(DefaultHighlightFalloff),
+                            ambient = highlightParam(DefaultHighlightAmbient),
+                            edgeBlend = highlightParam(DefaultHighlightEdgeBlend)
+                        )
+                )
+
+            else -> {
+                val strokeWidth = highlightParam(Ios27StrokeWidth).dp
+                Highlight(
+                    width = strokeWidth,
+                    alpha = highlightParam(Ios27HighlightAlpha),
+                    style =
+                        HighlightStyle.IOS27(
+                            color =
+                                Color.White.copy(alpha = highlightParam(Ios27HighlightColorAlpha)),
+                            falloff = highlightParam(Ios27Falloff),
+                            gain = highlightParam(Ios27Gain),
+                            darkEdgeFade = highlightParam(Ios27DarkEdgeFade)
+                        ),
+                    // 沿用预设自带的暗边（spread/blur/directionality 均为 0），
+                    // 只覆盖面板能调的宽度和浓度。
+                    darkEdge =
+                        Highlight.IOS27.darkEdge?.copy(
+                            width = strokeWidth,
+                            alpha = edgeDarkening
+                        )
+                )
+            }
+        }
     }
 
     fun applyEffects(scope: BackdropEffectScope, intensity: Float = 1f) {
@@ -158,7 +339,9 @@ fun rememberGlassDebugState(
     defaultSurfaceAlpha: Float = 0.6f,
     defaultBackgroundDim: Float = 0.23f,
     defaultBrightness: Float = 0.2f,
-    defaultSaturation: Float = 1.5f
+    defaultSaturation: Float = 1.5f,
+    defaultTintIndex: Int = 0,
+    defaultPresetIndex: Int = HighlightPresetIos27
 ): GlassDebugState {
     val applicationContext = LocalContext.current.applicationContext
     return remember(
@@ -173,6 +356,8 @@ fun rememberGlassDebugState(
         defaultBackgroundDim,
         defaultBrightness,
         defaultSaturation,
+        defaultTintIndex,
+        defaultPresetIndex,
         applicationContext
     ) {
         val defaults =
@@ -185,7 +370,9 @@ fun rememberGlassDebugState(
                 surfaceAlpha = defaultSurfaceAlpha,
                 backgroundDim = defaultBackgroundDim,
                 brightness = defaultBrightness,
-                saturation = defaultSaturation
+                saturation = defaultSaturation,
+                tintIndex = defaultTintIndex,
+                presetIndex = defaultPresetIndex
             )
         GlassDebugState(
             pageKey = pageKey,
@@ -197,7 +384,9 @@ fun rememberGlassDebugState(
             surfaceAlpha = defaultSurfaceAlpha,
             backgroundDim = defaultBackgroundDim,
             brightness = defaultBrightness,
-            saturation = defaultSaturation
+            saturation = defaultSaturation,
+            tintIndex = defaultTintIndex,
+            presetIndex = defaultPresetIndex
         ).apply {
             GlassDebugConfigStore(applicationContext)
                 .load(pageKey, defaults)
@@ -221,9 +410,14 @@ fun BoxScope.GlassDebugOverlay(
     showSurfaceAlpha: Boolean = false,
     showIconSize: Boolean = false,
     showTitleSize: Boolean = false,
+    showTintPicker: Boolean = false,
+    showPresetPicker: Boolean = false,
+    showHighlightParams: Boolean = false,
     autoSave: Boolean = false,
     showReset: Boolean = true,
     onReset: () -> Unit = { state.reset() },
+    title: String? = null,
+    header: (@Composable ColumnScope.(Backdrop) -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
     var isSheetExpanded by remember { mutableStateOf(true) }
@@ -235,6 +429,11 @@ fun BoxScope.GlassDebugOverlay(
     val currentConfig = state.toConfig()
 
     if (autoSave) {
+        DisposableEffect(state) {
+            onDispose {
+                configStore.save(state.pageKey, state.toConfig())
+            }
+        }
         LaunchedEffect(currentConfig) {
             delay(300)
             configStore.save(state.pageKey, currentConfig)
@@ -271,6 +470,8 @@ fun BoxScope.GlassDebugOverlay(
                     .padding(bottom = 72f.dp)
                     .navigationBarsPadding()
                     .fillMaxWidth()
+                    // 参数变多后面板会超出屏幕，限高并让内容滚动。
+                    .heightIn(max = 480f.dp)
                     .drawBackdrop(
                         backdrop = backdrop,
                         shape = { RoundedRectangle(32f.dp) },
@@ -283,9 +484,32 @@ fun BoxScope.GlassDebugOverlay(
                         exportedBackdrop = sheetBackdrop,
                         onDrawSurface = { drawRect(Color.White.copy(alpha = 0.5f)) }
                     )
-                    .padding(16f.dp),
+                    .padding(16f.dp)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12f.dp)
             ) {
+                if (title != null) {
+                    BasicText(
+                        title,
+                        Modifier.align(Alignment.CenterHorizontally),
+                        style = TextStyle(Color.Black, 16f.sp, FontWeight.Medium)
+                    )
+                }
+                header?.invoke(this, sheetBackdrop)
+                if (showPresetPicker) {
+                    GlassDebugPresetPicker(
+                        selectedIndex = state.presetIndex,
+                        onSelect = { state.applyPreset(it) },
+                        backdrop = sheetBackdrop
+                    )
+                }
+                if (showTintPicker) {
+                    GlassDebugTintPicker(
+                        selectedIndex = state.tintIndex,
+                        onSelect = { state.tintIndex = it },
+                        backdrop = sheetBackdrop
+                    )
+                }
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12f.dp)
@@ -429,6 +653,9 @@ fun BoxScope.GlassDebugOverlay(
                         }
                     }
                 }
+                if (showHighlightParams) {
+                    GlassDebugHighlightParams(state, sheetBackdrop)
+                }
                 if (autoSave) {
                     BasicText(
                         "Configuration saves automatically",
@@ -513,5 +740,120 @@ private fun GlassDebugSlider(
             visibilityThreshold = visibilityThreshold,
             backdrop = backdrop
         )
+    }
+}
+
+/** 当前高光预设的全部可调参数，两列平铺。 */
+@Composable
+private fun GlassDebugHighlightParams(
+    state: GlassDebugState,
+    backdrop: Backdrop
+) {
+    val params = state.presetParams()
+    BasicText(
+        "${highlightPresetLabel(state.presetIndex)} parameters",
+        style = TextStyle(Color.Black, 15f.sp, FontWeight.Medium)
+    )
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12f.dp)
+    ) {
+        for (column in 0..1) {
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12f.dp)
+            ) {
+                params
+                    .filterIndexed { index, _ -> index % 2 == column }
+                    .forEach { param ->
+                        GlassDebugSlider(
+                            param.label,
+                            { state.highlightParam(param) },
+                            param.range,
+                            param.step,
+                            backdrop,
+                            decimalPlaces = param.decimalPlaces
+                        ) {
+                            state.setHighlightParam(param, it)
+                        }
+                    }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GlassDebugPresetPicker(
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    backdrop: Backdrop
+) {
+    GlassDebugChoiceRow(
+        title = "Highlight  ${highlightPresetLabel(selectedIndex)}",
+        selectedIndex = selectedIndex,
+        labels = HighlightPresetLabels,
+        tints = List(HighlightPresetLabels.size) { Color.Unspecified },
+        onSelect = onSelect,
+        backdrop = backdrop
+    )
+}
+
+@Composable
+private fun GlassDebugTintPicker(
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    backdrop: Backdrop
+) {
+    GlassDebugChoiceRow(
+        title = "Tint  ${sampleAccentLabel(selectedIndex)}",
+        selectedIndex = selectedIndex,
+        labels = listOf("Blue", "Orange", "Clear"),
+        tints = listOf(SampleAccentBlue, SampleAccentOrange, Color.Unspecified),
+        onSelect = onSelect,
+        backdrop = backdrop
+    )
+}
+
+@Composable
+private fun GlassDebugChoiceRow(
+    title: String,
+    selectedIndex: Int,
+    labels: List<String>,
+    tints: List<Color>,
+    onSelect: (Int) -> Unit,
+    backdrop: Backdrop
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8f.dp)) {
+        BasicText(title)
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8f.dp)
+        ) {
+            labels.forEachIndexed { index, label ->
+                val selected = index == selectedIndex
+                val tint = tints.getOrElse(index) { Color.Unspecified }
+                val buttonTint =
+                    if (tint.isSpecified) tint
+                    else if (selected) SampleAccentBlue
+                    else Color.Unspecified
+                LiquidButton(
+                    onClick = { onSelect(index) },
+                    backdrop = backdrop,
+                    modifier = Modifier.weight(1f),
+                    isInteractive = false,
+                    tint = buttonTint,
+                    height = 40f.dp
+                ) {
+                    BasicText(
+                        if (selected) "$label  ✓" else label,
+                        style =
+                            TextStyle(
+                                color = if (buttonTint.isSpecified) Color.White else Color.Black,
+                                fontSize = 15f.sp
+                            )
+                    )
+                }
+            }
+        }
     }
 }

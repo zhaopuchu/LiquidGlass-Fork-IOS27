@@ -33,6 +33,8 @@ fun LiquidCard(
     glass?.refractionAmountFrac
     glass?.chromaticAberration
     glass?.edgeDarkening
+    glass?.presetIndex
+    glass?.readHighlightParams()
     if (applyAppearance) {
         glass?.surfaceAlpha
         glass?.brightness

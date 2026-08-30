@@ -17,7 +17,11 @@ internal data class GlassDebugConfig(
     val surfaceAlpha: Float = 0.6f,
     val backgroundDim: Float = 0.23f,
     val brightness: Float = 0.2f,
-    val saturation: Float = 1.5f
+    val saturation: Float = 1.5f,
+    val tintIndex: Int = 0,
+    val presetIndex: Int = 1,
+    // 高光预设的可调参数，键取自 AllHighlightParams；缺项表示沿用参数定义的默认值。
+    val highlightParams: Map<String, Float> = emptyMap()
 )
 
 internal class GlassDebugConfigStore(context: Context) {
@@ -70,13 +74,29 @@ internal class GlassDebugConfigStore(context: Context) {
             brightness =
                 preferences.getFloat(key(pageKey, BRIGHTNESS), defaults.brightness),
             saturation =
-                preferences.getFloat(key(pageKey, SATURATION), defaults.saturation)
+                preferences.getFloat(key(pageKey, SATURATION), defaults.saturation),
+            tintIndex =
+                preferences.getInt(key(pageKey, TINT_INDEX), defaults.tintIndex).coerceIn(0, 2),
+            presetIndex =
+                preferences.getInt(key(pageKey, PRESET_INDEX), defaults.presetIndex).coerceIn(0, 1),
+            highlightParams =
+                AllHighlightParams.associate { param ->
+                    val storeKey = key(pageKey, HIGHLIGHT_PARAM_PREFIX + param.key)
+                    val fallback = defaults.highlightParams[param.key] ?: param.default
+                    param.key to preferences.getFloat(storeKey, fallback)
+                }
         )
     }
 
     fun save(pageKey: String, config: GlassDebugConfig) {
-        preferences
-            .edit()
+        val editor = preferences.edit()
+        AllHighlightParams.forEach { param ->
+            editor.putFloat(
+                key(pageKey, HIGHLIGHT_PARAM_PREFIX + param.key),
+                config.highlightParams[param.key] ?: param.default
+            )
+        }
+        editor
             .putFloat(key(pageKey, CORNER_RADIUS), config.cornerRadiusFrac)
             .putFloat(key(pageKey, COMPONENT_SIZE), config.componentSizeDp)
             .putFloat(key(pageKey, COMPONENT_WIDTH), config.componentWidthDp)
@@ -92,6 +112,8 @@ internal class GlassDebugConfigStore(context: Context) {
             .putFloat(key(pageKey, BACKGROUND_DIM), config.backgroundDim)
             .putFloat(key(pageKey, BRIGHTNESS), config.brightness)
             .putFloat(key(pageKey, SATURATION), config.saturation)
+            .putInt(key(pageKey, TINT_INDEX), config.tintIndex.coerceIn(0, 2))
+            .putInt(key(pageKey, PRESET_INDEX), config.presetIndex.coerceIn(0, 1))
             .putBoolean(key(pageKey, SAVED), true)
             .apply()
     }
@@ -118,5 +140,8 @@ internal class GlassDebugConfigStore(context: Context) {
         const val BACKGROUND_DIM = "background_dim"
         const val BRIGHTNESS = "brightness"
         const val SATURATION = "saturation"
+        const val TINT_INDEX = "tint_index"
+        const val PRESET_INDEX = "preset_index"
+        const val HIGHLIGHT_PARAM_PREFIX = "highlight_param."
     }
 }

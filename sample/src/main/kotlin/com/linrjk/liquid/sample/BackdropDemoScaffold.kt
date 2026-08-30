@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +38,7 @@ import com.linrjk.liquid.sample.components.LiquidButton
 @Composable
 fun BackdropDemoScaffold(
     modifier: Modifier = Modifier,
+    fallbackColor: Color? = null,
     content: @Composable BoxScope.(backdrop: LayerBackdrop) -> Unit
 ) {
     Box(
@@ -62,16 +64,34 @@ fun BackdropDemoScaffold(
         }
 
         val backdrop = rememberLayerBackdrop()
-
-        Image(
-            painter ?: painterResource(R.drawable.wallpaper_light),
-            null,
+        val selectedPainter = painter
+        val backdropModifier =
             Modifier
                 .layerBackdrop(backdrop)
                 .then(modifier)
-                .fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
+                .fillMaxSize()
+
+        when {
+            selectedPainter != null -> {
+                Image(
+                    painter = selectedPainter,
+                    contentDescription = null,
+                    modifier = backdropModifier,
+                    contentScale = ContentScale.Crop
+                )
+            }
+            fallbackColor != null -> {
+                Box(backdropModifier.background(fallbackColor))
+            }
+            else -> {
+                Image(
+                    painter = painterResource(R.drawable.wallpaper_light),
+                    contentDescription = null,
+                    modifier = backdropModifier,
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
 
         content(backdrop)
 

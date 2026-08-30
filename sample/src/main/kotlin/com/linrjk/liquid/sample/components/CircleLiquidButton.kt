@@ -3,12 +3,12 @@ package com.linrjk.liquid.sample.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
@@ -28,8 +28,12 @@ fun CircleLiquidButton(
     icon: ImageVector = MaterialBackIcon,
     iconSize: Dp = 32f.dp,
     iconTint: Color = Color.Black,
+    tint: Color = Color.Unspecified,
     contentDescription: String? = "Back"
 ) {
+    val resolvedSize = if (glass != null) glass.componentSizeDp.dp else size
+    val resolvedIconSize = if (glass != null) glass.iconSizeDp.dp else iconSize
+    val resolvedIconTint = if (tint.isSpecified) Color.White else iconTint
     val surfaceColor =
         if (applyAppearance && glass != null) {
             val baseColor =
@@ -43,19 +47,20 @@ fun CircleLiquidButton(
     LiquidButton(
         onClick = onClick,
         backdrop = backdrop,
-        modifier = modifier.size(size),
+        modifier = modifier.requiredSize(resolvedSize),
+        tint = tint,
         surfaceColor = surfaceColor,
         glass = glass,
         applyColorControls = applyAppearance,
         shape = CircleShape,
-        height = size,
+        height = resolvedSize,
         horizontalContentPadding = 0f.dp
     ) {
         Image(
             painter = rememberVectorPainter(icon),
             contentDescription = contentDescription,
-            modifier = Modifier.requiredSize(iconSize),
-            colorFilter = ColorFilter.tint(iconTint)
+            modifier = Modifier.requiredSize(resolvedIconSize),
+            colorFilter = ColorFilter.tint(resolvedIconTint)
         )
     }
 }

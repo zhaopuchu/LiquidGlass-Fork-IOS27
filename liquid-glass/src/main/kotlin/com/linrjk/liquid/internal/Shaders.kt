@@ -65,6 +65,26 @@ float smoothRimRamp(float rim) {
     return position * position * position * (position * (position * 6.0 - 15.0) + 10.0);
 }"""
 
+/**
+ * iOS 27 描边沿周长的强度分布：正上/正下最强，左右两侧为 0。
+ * 高光和暗边淡出共用它，保证两者相位严格一致。
+ *
+ * falloff 决定延伸范围（越大越向正上正下收窄），gain 决定核心亮度：
+ * 先按幂次衰减再乘 gain 并截断到 1，核心会形成一段饱和的亮带。
+ * 两者分开才能同时做到「范围窄」和「核心亮」。
+ */
+@Language("AGSL")
+private const val Ios27EdgeIntensity = """
+float ios27EdgeIntensity(float2 coord, float2 rectSize, float4 radii, float falloff, float gain) {
+    float2 halfSize = rectSize * 0.5;
+    float2 centeredCoord = coord - halfSize;
+    float radius = radiusAt(centeredCoord, radii);
+    float gradRadius = min(radius * 1.5, min(halfSize.x, halfSize.y));
+    float2 grad = gradSdRoundedRect(centeredCoord, halfSize, gradRadius);
+    float ramp = pow(clamp(abs(grad.y), 0.0, 1.0), falloff);
+    return clamp(ramp * gain, 0.0, 1.0);
+}"""
+
 @Language("AGSL")
 internal const val RoundedRectRefractionShaderString = """
 uniform shader content;
@@ -198,20 +218,35 @@ half4 main(float2 coord) {
 }"""
 
 @Language("AGSL")
-internal const val AmbientHighlightShaderString = """
+internal const val IOS27HighlightShaderString = """
 uniform float2 size;
 uniform float4 cornerRadii;
-uniform float angle;
+layout(color) uniform half4 color;
 uniform float falloff;
+uniform float gain;
 
 $RoundedRectSDF
-$RimFactor
+$Ios27EdgeIntensity
 
 half4 main(float2 coord) {
-    float d = rimFactor(coord, size, cornerRadii, angle);
-    float intensity = pow(abs(d), falloff);
-    float t = smoothRimRamp(d);
-    return half4(t, t, t, 1.0) * intensity;
+    return color * ios27EdgeIntensity(coord, size, cornerRadii, falloff, gain);
+}"""
+
+@Language("AGSL")
+internal const val IOS27DarkEdgeShaderString = """
+uniform float2 size;
+uniform float4 cornerRadii;
+layout(color) uniform half4 color;
+uniform float falloff;
+uniform float gain;
+uniform float fade;
+
+$RoundedRectSDF
+$Ios27EdgeIntensity
+
+half4 main(float2 coord) {
+    float intensity = ios27EdgeIntensity(coord, size, cornerRadii, falloff, gain);
+    return color * (1.0 - fade * intensity);
 }"""
 
 @Language("AGSL")

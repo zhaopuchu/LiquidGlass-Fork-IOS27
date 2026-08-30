@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -61,6 +62,14 @@ fun LiquidSlider(
     glass?.refractionAmountFrac
     glass?.chromaticAberration
     glass?.edgeDarkening
+    glass?.presetIndex
+    glass?.readHighlightParams()
+
+    // 同一个滑块实例会被面板复用给不同的 GlassDebugState，切换后 value / onValueChange
+    // 都是新 lambda。但 DampedDragAnimation、pointerInput、LaunchedEffect 都被 remember
+    // 住不会重建，若直接捕获就会一直读写最初绑定的那个 state。
+    val currentValue by rememberUpdatedState(value)
+    val currentOnValueChange by rememberUpdatedState(onValueChange)
 
     val isLightTheme = !isSystemInDarkTheme()
     val accentColor =
@@ -85,7 +94,7 @@ fun LiquidSlider(
             remember(animationScope, valueRange, visibilityThreshold) {
                 DampedDragAnimation(
                     animationScope = animationScope,
-                    initialValue = value(),
+                    initialValue = currentValue(),
                     valueRange = valueRange,
                     visibilityThreshold = visibilityThreshold,
                     initialScale = 1f,
@@ -93,7 +102,7 @@ fun LiquidSlider(
                     onDragStarted = {},
                     onDragStopped = {
                         if (didDrag) {
-                            onValueChange(targetValue)
+                            currentOnValueChange(targetValue)
                         }
                     },
                     onDrag = { _, dragAmount ->
@@ -103,12 +112,12 @@ fun LiquidSlider(
                         val delta = (valueRange.endInclusive - valueRange.start) * (dragAmount.x / trackWidth)
                         val next = if (isLtr) (targetValue + delta).coerceIn(valueRange)
                         else (targetValue - delta).coerceIn(valueRange)
-                        onValueChange(next)
+                        currentOnValueChange(next)
                     }
                 )
             }
         LaunchedEffect(dampedDragAnimation) {
-            snapshotFlow { value() }
+            snapshotFlow { currentValue() }
                 .collectLatest { value ->
                     if (dampedDragAnimation.targetValue != value) {
                         dampedDragAnimation.updateValue(value)
@@ -129,7 +138,7 @@ fun LiquidSlider(
                                 else valueRange.endInclusive - delta)
                                     .coerceIn(valueRange)
                             dampedDragAnimation.animateToValue(targetValue)
-                            onValueChange(targetValue)
+                            currentOnValueChange(targetValue)
                         }
                     }
                     .height(6f.dp)
@@ -193,9 +202,9 @@ fun LiquidSlider(
                             glass.highlight()
                         } else {
                             val progress = dampedDragAnimation.pressProgress
-                            Highlight.Ambient.copy(
-                                width = Highlight.Ambient.width / 1.5f,
-                                blurRadius = Highlight.Ambient.blurRadius / 1.5f,
+                            Highlight.Default.copy(
+                                width = Highlight.Default.width / 1.5f,
+                                blurRadius = Highlight.Default.blurRadius / 1.5f,
                                 alpha = progress
                             )
                         }

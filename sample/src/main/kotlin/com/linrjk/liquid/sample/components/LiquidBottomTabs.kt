@@ -74,6 +74,8 @@ fun LiquidBottomTabs(
     glass?.refractionAmountFrac
     glass?.chromaticAberration
     glass?.edgeDarkening
+    glass?.presetIndex
+    glass?.readHighlightParams()
 
     val isLightTheme = !isSystemInDarkTheme()
     val accentColor =

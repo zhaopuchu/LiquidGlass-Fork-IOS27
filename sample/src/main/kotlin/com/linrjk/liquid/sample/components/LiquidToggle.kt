@@ -58,6 +58,8 @@ fun LiquidToggle(
     glass?.refractionAmountFrac
     glass?.chromaticAberration
     glass?.edgeDarkening
+    glass?.presetIndex
+    glass?.readHighlightParams()
 
     val isLightTheme = !isSystemInDarkTheme()
     val accentColor =
@@ -184,9 +186,9 @@ fun LiquidToggle(
                             glass.highlight()
                         } else {
                             val progress = dampedDragAnimation.pressProgress
-                            Highlight.Ambient.copy(
-                                width = Highlight.Ambient.width / 1.5f,
-                                blurRadius = Highlight.Ambient.blurRadius / 1.5f,
+                            Highlight.Default.copy(
+                                width = Highlight.Default.width / 1.5f,
+                                blurRadius = Highlight.Default.blurRadius / 1.5f,
                                 alpha = progress
                             )
                         }
