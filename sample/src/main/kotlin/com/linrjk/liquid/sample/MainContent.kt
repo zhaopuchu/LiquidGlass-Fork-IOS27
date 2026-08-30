@@ -13,6 +13,7 @@ import com.linrjk.liquid.sample.destinations.AdaptiveLuminanceGlassContent
 import com.linrjk.liquid.sample.destinations.BottomTabsContent
 import com.linrjk.liquid.sample.destinations.ButtonContent
 import com.linrjk.liquid.sample.destinations.CircleButtonContent
+import com.linrjk.liquid.sample.destinations.CircleProgressContent
 import com.linrjk.liquid.sample.destinations.ControlCenterContent
 import com.linrjk.liquid.sample.destinations.DialogContent
 import com.linrjk.liquid.sample.destinations.GlassPlaygroundContent
@@ -41,6 +42,7 @@ fun MainContent() {
             CatalogDestination.Home -> HomeContent(onNavigate = { destination = it })
 
             CatalogDestination.CircleButton -> CircleButtonContent()
+            CatalogDestination.CircleProgress -> CircleProgressContent()
             CatalogDestination.LiquidTopAppBar ->
                 LiquidTopAppBarContent(onBackClick = { destination = CatalogDestination.Home })
             CatalogDestination.LiquidCard -> LiquidCardContent()

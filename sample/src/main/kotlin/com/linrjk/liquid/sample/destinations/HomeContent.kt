@@ -43,6 +43,7 @@ fun HomeContent(onNavigate: (CatalogDestination) -> Unit) {
         Column {
             Subtitle("Components")
             ListItem({ onNavigate(CatalogDestination.CircleButton) }, "Circle Button")
+            ListItem({ onNavigate(CatalogDestination.CircleProgress) }, "Circle Progress")
             ListItem({ onNavigate(CatalogDestination.LiquidTopAppBar) }, "Liquid TopAppBar")
             ListItem({ onNavigate(CatalogDestination.LiquidCard) }, "Liquid Card")
             ListItem({ onNavigate(CatalogDestination.Button) }, "Button")

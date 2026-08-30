@@ -45,6 +45,7 @@ import com.linrjk.liquid.sample.utils.DampedDragAnimation
 import com.linrjk.liquid.sample.utils.InteractiveHighlight
 import com.linrjk.liquid.drawBackdrop
 import com.linrjk.liquid.effects.blur
+import com.linrjk.liquid.effects.colorControls
 import com.linrjk.liquid.effects.lens
 import com.linrjk.liquid.effects.vibrancy
 import com.linrjk.liquid.highlight.Highlight
@@ -76,6 +77,8 @@ fun LiquidBottomTabs(
     glass?.edgeDarkening
     glass?.presetIndex
     glass?.readHighlightParams()
+    glass?.brightness
+    glass?.saturation
 
     val isLightTheme = !isSystemInDarkTheme()
     val accentColor =
@@ -192,6 +195,10 @@ fun LiquidBottomTabs(
                     },
                     effects = {
                         if (glass != null) {
+                            colorControls(
+                                brightness = glass.brightness,
+                                saturation = glass.saturation
+                            )
                             glass.applyEffects(this)
                         } else {
                             vibrancy()
@@ -241,6 +248,10 @@ fun LiquidBottomTabs(
                         effects = {
                             val progress = dampedDragAnimation.pressProgress
                             if (glass != null) {
+                                colorControls(
+                                    brightness = glass.brightness,
+                                    saturation = glass.saturation
+                                )
                                 glass.applyEffects(this, progress)
                             } else {
                                 vibrancy()
@@ -283,6 +294,10 @@ fun LiquidBottomTabs(
                     effects = {
                         val progress = dampedDragAnimation.pressProgress
                         if (glass != null) {
+                            colorControls(
+                                brightness = glass.brightness,
+                                saturation = glass.saturation
+                            )
                             glass.applyEffects(this, progress)
                         } else {
                             lens(

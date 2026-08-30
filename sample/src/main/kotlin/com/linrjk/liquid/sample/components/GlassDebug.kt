@@ -70,7 +70,7 @@ internal fun sampleAccentLabel(index: Int): String {
 }
 
 private const val SamplePresetMaxIndex = 1
-private const val HighlightPresetDefault = 0
+internal const val HighlightPresetDefault = 0
 private const val HighlightPresetIos27 = 1
 
 internal val HighlightPresetLabels = listOf("Highlight", "iOS 27")
@@ -99,7 +99,7 @@ private val DefaultHighlightWidth = HighlightParam("d_width", "Width (dp)", 0f..
 private val DefaultHighlightBlur = HighlightParam("d_blur", "Blur (dp)", 0f..4f, 0.25f, 0.01f)
 private val DefaultHighlightAlpha = HighlightParam("d_alpha", "Layer alpha", 0f..1f, 1f)
 private val DefaultHighlightColorAlpha = HighlightParam("d_color_alpha", "Color alpha", 0f..1f, 0.5f)
-private val DefaultHighlightAngle =
+internal val DefaultHighlightAngle =
     HighlightParam("d_angle", "Light angle", 0f..360f, 45f, 1f, decimalPlaces = 0)
 private val DefaultHighlightFalloff = HighlightParam("d_falloff", "Falloff", 0f..8f, 1f, 0.01f)
 private val DefaultHighlightAmbient = HighlightParam("d_ambient", "Ambient", 0f..1f, 0f)
@@ -189,6 +189,13 @@ class GlassDebugState internal constructor(
     internal fun setHighlightParam(param: HighlightParam, value: Float) {
         highlightParamValues[param.key] =
             value.coerceIn(param.range.start, param.range.endInclusive)
+    }
+
+    internal fun applyHighlightParamDefaults(values: Map<String, Float>) {
+        values.forEach { (key, value) ->
+            val param = AllHighlightParams.find { it.key == key } ?: return@forEach
+            setHighlightParam(param, value)
+        }
     }
 
     internal fun presetParams(): List<HighlightParam> {
@@ -331,6 +338,7 @@ class GlassDebugState internal constructor(
 fun rememberGlassDebugState(
     pageKey: String,
     fixedCornerRadiusFrac: Float? = null,
+    defaultCornerRadiusFrac: Float = 0.5f,
     defaultComponentSizeDp: Float = 96f,
     defaultComponentWidthDp: Float = 240f,
     defaultComponentHeightDp: Float = 48f,
@@ -340,13 +348,16 @@ fun rememberGlassDebugState(
     defaultBackgroundDim: Float = 0.23f,
     defaultBrightness: Float = 0.2f,
     defaultSaturation: Float = 1.5f,
+    defaultEdgeDarkening: Float = 0.18f,
     defaultTintIndex: Int = 0,
-    defaultPresetIndex: Int = HighlightPresetIos27
+    defaultPresetIndex: Int = HighlightPresetIos27,
+    defaultHighlightParams: Map<String, Float> = emptyMap()
 ): GlassDebugState {
     val applicationContext = LocalContext.current.applicationContext
     return remember(
         pageKey,
         fixedCornerRadiusFrac,
+        defaultCornerRadiusFrac,
         defaultComponentSizeDp,
         defaultComponentWidthDp,
         defaultComponentHeightDp,
@@ -356,31 +367,38 @@ fun rememberGlassDebugState(
         defaultBackgroundDim,
         defaultBrightness,
         defaultSaturation,
+        defaultEdgeDarkening,
         defaultTintIndex,
         defaultPresetIndex,
+        defaultHighlightParams,
         applicationContext
     ) {
         val defaults =
             GlassDebugConfig(
+                cornerRadiusFrac = defaultCornerRadiusFrac,
                 componentSizeDp = defaultComponentSizeDp,
                 componentWidthDp = defaultComponentWidthDp,
                 componentHeightDp = defaultComponentHeightDp,
                 iconSizeDp = defaultIconSizeDp,
                 titleSizeSp = defaultTitleSizeSp,
+                edgeDarkening = defaultEdgeDarkening,
                 surfaceAlpha = defaultSurfaceAlpha,
                 backgroundDim = defaultBackgroundDim,
                 brightness = defaultBrightness,
                 saturation = defaultSaturation,
                 tintIndex = defaultTintIndex,
-                presetIndex = defaultPresetIndex
+                presetIndex = defaultPresetIndex,
+                highlightParams = defaultHighlightParams
             )
         GlassDebugState(
             pageKey = pageKey,
+            cornerRadiusFrac = defaultCornerRadiusFrac,
             componentSizeDp = defaultComponentSizeDp,
             componentWidthDp = defaultComponentWidthDp,
             componentHeightDp = defaultComponentHeightDp,
             iconSizeDp = defaultIconSizeDp,
             titleSizeSp = defaultTitleSizeSp,
+            edgeDarkening = defaultEdgeDarkening,
             surfaceAlpha = defaultSurfaceAlpha,
             backgroundDim = defaultBackgroundDim,
             brightness = defaultBrightness,
@@ -388,6 +406,7 @@ fun rememberGlassDebugState(
             tintIndex = defaultTintIndex,
             presetIndex = defaultPresetIndex
         ).apply {
+            applyHighlightParamDefaults(defaultHighlightParams)
             GlassDebugConfigStore(applicationContext)
                 .load(pageKey, defaults)
                 ?.let(::applyConfig)

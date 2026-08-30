@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.material.ripple)
+    implementation(libs.material)
     implementation(libs.jetbrains.annotations)
     implementation(project(":liquid-glass"))
 }
